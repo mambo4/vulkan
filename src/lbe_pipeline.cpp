@@ -5,8 +5,18 @@
 
 namespace lbe {
 
-    LbePipeline::LbePipeline(const std::string& vertFilepath, const std::string& fragFilepath) {
-        createGraphicsPipeline(vertFilepath, fragFilepath);
+    LbePipeline::LbePipeline(
+            LbeDevice& device, 
+            const std::string& vertFilepath, 
+            const std::string& fragFilepath , 
+            const PipelineConfigInfo& configInfo ) : lbeDevice{device} {
+        createGraphicsPipeline(vertFilepath, fragFilepath,configInfo);
+    }
+
+    LbePipeline::~LbePipeline() {
+        vkDestroyShaderModule(lbeDevice.device(), fragShaderModule, nullptr);
+        vkDestroyShaderModule(lbeDevice.device(), vertShaderModule, nullptr);
+        vkDestroyPipeline(lbeDevice.device(), graphicsPipeline, nullptr);
     }
 
     std::vector<char> LbePipeline::readFile(const std::string& filepath) {
@@ -20,15 +30,34 @@ namespace lbe {
         file.seekg(0);
         file.read(buffer.data(), fileSize);
         file.close();
-        return buffer;
+        return buffer; 
     }
 
-    void LbePipeline::createGraphicsPipeline( const std::string& vertFilepath, const std::string& fragFilepath) {
+    void LbePipeline::createGraphicsPipeline( const std::string& vertFilepath, const std::string& fragFilepath,const PipelineConfigInfo& configInfo) {
         auto vertShaderCode = readFile(vertFilepath);
         auto fragShaderCode = readFile(fragFilepath);
         
         std::cout << "Vertex shader code size: " << vertShaderCode.size() << " bytes\n";
         std::cout << "Fragment shader code size: " << fragShaderCode.size() << " bytes\n";
     }   
+
+    void LbePipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule){
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+        if (vkCreateShaderModule(lbeDevice.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create shader module");
+        } 
+    }
+
+    PipelineConfigInfo LbePipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height){
+        PipelineConfigInfo configInfo{};
+        // Set default configuration parameters as needed
+        return configInfo;
+    }
+        
+
 
 }

@@ -2,6 +2,7 @@
 
 #include "lbe_window.hpp"
 #include "lbe_pipeline.hpp"
+#include "lbe_device.hpp"
 
 namespace lbe {
     
@@ -15,7 +16,12 @@ namespace lbe {
 
         private:
             LbeWindow lbeWindow{WIDTH, HEIGHT, "lbeEngine -vulkan Window"};
-            LbePipeline lbePipeline{"../shaders/simple_shader.vert.spv", "../shaders/simple_shader.frag.spv"};
+            LbeDevice lbeDevice{lbeWindow};
+            LbePipeline lbePipeline{
+                lbeDevice,
+                "../shaders/simple_shader.vert.spv",
+                "../shaders/simple_shader.frag.spv", 
+                LbePipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
      };
 
-}
+} 

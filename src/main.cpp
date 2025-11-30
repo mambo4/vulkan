@@ -3,8 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 
-/* Vulkan Game Engine Tutorial 02
-https://www.youtube.com/watch?v=_riranMmtvI&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=3
+/* Vulkan Game Engine Tutorial 03
+https://www.youtube.com/watch?v=LYKlEIzGmW4&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=4
 */
 
 int main() {
