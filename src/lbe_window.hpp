@@ -1,6 +1,6 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
+#define GLFW_INCLUDE_VULKAN // tells '#include <GLFW/glfw3.h>' to include the Vulkan headers
 #include <GLFW/glfw3.h>
 #include <string>
 
@@ -10,7 +10,7 @@ class LbeWindow {
 
     public:
 
-      LbeWindow(int w, int h, std::string t);
+      LbeWindow(int w, int h, std::string title);
       ~LbeWindow();
     
       LbeWindow(const LbeWindow&) = delete;

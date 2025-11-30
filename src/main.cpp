@@ -3,6 +3,9 @@
 #include <iostream>
 #include <stdexcept>
 
+/* Vulkan Game Engine Tutorial 02
+https://www.youtube.com/watch?v=_riranMmtvI&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=3
+*/
 
 int main() {
 
