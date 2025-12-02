@@ -41,7 +41,7 @@ namespace lbe {
         LbePipeline(const LbePipeline&) = delete;
         LbePipeline& operator=(const LbePipeline&) = delete;    
 
-        // static PipelineConfigInfo defaultPipelineConfigInfo(uint32_t width, uint32_t height);
+        void bind(VkCommandBuffer commandBuffer);
         static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
         
     private:
