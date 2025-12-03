@@ -4,6 +4,7 @@
 #include "lbe_pipeline.hpp"
 #include "lbe_device.hpp"
 #include "lbe_swap_chain.hpp"
+#include "lbe_model.hpp"
 
 #include <memory>
 #include <vector>
@@ -27,7 +28,7 @@ namespace lbe {
         void run();
 
         private:
-
+            void loadModels();
             void createPipelineLayout();
             void createPipeline();
             void createCommandBuffers();
@@ -39,6 +40,7 @@ namespace lbe {
             std::unique_ptr<LbePipeline> lbePipeline;
             VkPipelineLayout pipelineLayout;
             std::vector<VkCommandBuffer> commandBuffers;
-     };
+            std::unique_ptr<LbeModel> lbeModel;
+     }; 
 
 } 

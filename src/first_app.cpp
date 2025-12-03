@@ -5,6 +5,7 @@
 namespace lbe {
 
     FirstApp::FirstApp() {
+        loadModels();
         createPipelineLayout();
         createPipeline();
         createCommandBuffers();
@@ -22,6 +23,27 @@ namespace lbe {
         }
         vkDeviceWaitIdle(lbeDevice.device());
     } 
+
+    void FirstApp::loadModels(){
+        std::vector<LbeModel::Vertex> vertices{
+            {{0.0f, 0.5f}},
+            {{-0.5f, 0.0f}},
+            {{-0.25f,- 0.5f}},
+
+            {{0.0f, 0.5f}},
+            {{-0.25f,- 0.5f}},
+            {{0.0f, -0.3f}},
+
+            {{0.0f, 0.5f}},
+            {{0.0f, -0.3f}},
+            {{0.25f,- 0.5f}},
+
+            {{0.0f, 0.5f}},
+            {{0.25f,- 0.5f}},
+            {{0.5f,0.0f}},
+        }; 
+        lbeModel = std::make_unique<LbeModel>(lbeDevice, vertices);
+    }
 
     void FirstApp::createPipelineLayout(){
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -65,7 +87,7 @@ namespace lbe {
         allocInfo.commandPool = lbeDevice.getCommandPool();
         allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
         if (vkAllocateCommandBuffers(lbeDevice.device(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate command buffers!");
+            throw std::runtime_error("(vkAllocateCommandBuffers) failed to allocate command buffers!");
         }
 
         for (size_t i = 0; i < commandBuffers.size(); i++) {
@@ -73,7 +95,7 @@ namespace lbe {
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
             if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-                throw std::runtime_error("failed to begin recording command buffer!");
+                throw std::runtime_error("(vkBeginCommandBufferfailed to begin recording command buffer!");
             }
 
             VkRenderPassBeginInfo renderPassInfo{};
@@ -93,12 +115,13 @@ namespace lbe {
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             lbePipeline->bind(commandBuffers[i]);
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+            lbeModel->bind(commandBuffers[i]);
+            lbeModel->draw(commandBuffers[i]);
 
             vkCmdEndRenderPass(commandBuffers[i]);
 
             if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to record command buffer!");
+                throw std::runtime_error("(vkEndCommandBuffer)failed to record command buffer!");
             }
         }
 
@@ -109,12 +132,12 @@ namespace lbe {
         auto result = lbeSwapChain.acquireNextImage(&imageIndex);
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-            throw std::runtime_error("failed to acquire next swap chain image!");
+            throw std::runtime_error("(lbeSwapChain.acquireNextImagefailed to acquire next swap chain image!");
         }
 
         result = lbeSwapChain.submitCommandBuffers(&commandBuffers[imageIndex], &imageIndex);
         if (result != VK_SUCCESS) {
-            throw std::runtime_error("failed to present swap chain image!");
+            throw std::runtime_error("(lbeSwapChain.submitCommandBuffers) failed to present swap chain image!");
         }
     }
 }
