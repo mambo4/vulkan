@@ -45,8 +45,12 @@ LbeSwapChain::~LbeSwapChain() {
   vkDestroyRenderPass(device.device(), renderPass, nullptr);
 
   // cleanup synchronization objects
+  // see comments https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+  for (size_t i = 0; i < imageCount(); i++) {
+      vkDestroySemaphore(device.device(), renderFinishedSemaphores[i], nullptr);
+  }
+
   for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    vkDestroySemaphore(device.device(), renderFinishedSemaphores[i], nullptr);
     vkDestroySemaphore(device.device(), imageAvailableSemaphores[i], nullptr);
     vkDestroyFence(device.device(), inFlightFences[i], nullptr);
   }
@@ -71,8 +75,7 @@ VkResult LbeSwapChain::acquireNextImage(uint32_t *imageIndex) {
   return result;
 }
 
-VkResult LbeSwapChain::submitCommandBuffers(
-    const VkCommandBuffer *buffers, uint32_t *imageIndex) {
+VkResult LbeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
   if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
     vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
   }
@@ -90,7 +93,8 @@ VkResult LbeSwapChain::submitCommandBuffers(
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = buffers;
 
-  VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+  // see comments https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+  VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[*imageIndex]};
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -337,7 +341,9 @@ void LbeSwapChain::createDepthResources() {
 
 void LbeSwapChain::createSyncObjects() {
   imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-  renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+  // renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+  // see comments https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+  renderFinishedSemaphores.resize(imageCount());
   inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
   imagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
 
@@ -348,11 +354,15 @@ void LbeSwapChain::createSyncObjects() {
   fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
   fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+  // see comments https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+  for (size_t i = 0; i < imageCount(); i++) {
+    if ( vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS  ){
+      throw std::runtime_error("failed to create renderFinishedSemaphores objects for a frame!");
+    }
+  }
+
   for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    if (vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
-            VK_SUCCESS ||
-        vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
-            VK_SUCCESS ||
+    if (vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=VK_SUCCESS ||
         vkCreateFence(device.device(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
       throw std::runtime_error("failed to create synchronization objects for a frame!");
     }
