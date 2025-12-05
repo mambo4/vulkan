@@ -24,7 +24,6 @@ namespace lbe {
             FirstApp(const FirstApp&) = delete;
             FirstApp& operator=(const FirstApp&) = delete;
 
-        
         void run();
 
         private:
