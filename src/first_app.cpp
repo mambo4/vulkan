@@ -7,7 +7,7 @@ namespace lbe {
     FirstApp::FirstApp() {
         loadModels();
         createPipelineLayout();
-        createPipeline();
+        recreateSwapChain();
         createCommandBuffers();
     }
 
@@ -69,14 +69,16 @@ namespace lbe {
             }
     }
     void FirstApp::createPipeline(){
+        assert(lbeSwapChain != nullptr && "FirstApp::createPipeline() Cannot create pipeline before swap chain");
+        assert(pipelineLayout != nullptr && "FirstApp::createPipeline() Cannot create pipeline before pipeline layout");
+
         //auto pipelineConfig = LbePipeline::defaultPipelineConfigInfo(lbeSwapChain.width(), lbeSwapChain.height());
         PipelineConfigInfo pipelineConfig{};
         LbePipeline::defaultPipelineConfigInfo(
-            pipelineConfig,
-            lbeSwapChain.width(),
-            lbeSwapChain.height());
+            pipelineConfig
+        );
 
-        pipelineConfig.renderPass = lbeSwapChain.getRenderPass();
+        pipelineConfig.renderPass = lbeSwapChain->getRenderPass();
         pipelineConfig.pipelineLayout = pipelineLayout;
         lbePipeline = std::make_unique<LbePipeline>(
             lbeDevice,
@@ -85,9 +87,33 @@ namespace lbe {
             pipelineConfig);
     }
 
+    void FirstApp::recreateSwapChain() {
+        auto extent = lbeWindow.getExtent();
+        while (extent.width == 0 || extent.height == 0) {
+            extent = lbeWindow.getExtent();
+            glfwWaitEvents();
+        }
+
+        vkDeviceWaitIdle(lbeDevice.device());
+
+        if (lbeSwapChain==nullptr) {
+            lbeSwapChain = std::make_unique<LbeSwapChain>(lbeDevice, extent);
+        } else {
+            lbeSwapChain = std::make_unique<LbeSwapChain>(lbeDevice, extent, std::move(lbeSwapChain));
+            if(!lbeSwapChain->imageCount() != commandBuffers.size())    {
+                freeCommandBuffers();
+                createCommandBuffers();
+            }
+        }
+
+        // if render pass is compatible, don't need to re-create pipeline
+        createPipeline();
+        // createCommandBuffers();
+    }
+
     void FirstApp::createCommandBuffers(){
 
-        commandBuffers.resize(lbeSwapChain.imageCount());
+        commandBuffers.resize(lbeSwapChain->imageCount());
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -96,53 +122,90 @@ namespace lbe {
         if (vkAllocateCommandBuffers(lbeDevice.device(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("(vkAllocateCommandBuffers) failed to allocate command buffers!");
         }
-
-        for (size_t i = 0; i < commandBuffers.size(); i++) {
-            VkCommandBufferBeginInfo beginInfo{};
-            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-            if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-                throw std::runtime_error("(vkBeginCommandBufferfailed to begin recording command buffer!");
-            }
-
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = lbeSwapChain.getRenderPass();
-            renderPassInfo.framebuffer = lbeSwapChain.getFrameBuffer(i);
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = lbeSwapChain.getSwapChainExtent();
-
-            std::array<VkClearValue, 2> clearValues{};
-            clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
-            clearValues[1].depthStencil = {1.0f, 0};
-
-            renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-            renderPassInfo.pClearValues = clearValues.data();
-
-            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-            lbePipeline->bind(commandBuffers[i]);
-            lbeModel->bind(commandBuffers[i]);
-            lbeModel->draw(commandBuffers[i]);
-
-            vkCmdEndRenderPass(commandBuffers[i]);
-
-            if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-                throw std::runtime_error("(vkEndCommandBuffer)failed to record command buffer!");
-            }
-        }
-
     }
     
-    void FirstApp::drawFrame(){
-        uint32_t imageIndex;
-        auto result = lbeSwapChain.acquireNextImage(&imageIndex);
+    void FirstApp::freeCommandBuffers(){
+        vkFreeCommandBuffers(
+            lbeDevice.device(),
+            lbeDevice.getCommandPool(),
+            static_cast<uint32_t>(commandBuffers.size()),
+            commandBuffers.data());
+        commandBuffers.clear();
+    }    
 
-        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-            throw std::runtime_error("(lbeSwapChain.acquireNextImagefailed to acquire next swap chain image!");
+    void FirstApp::recordCommandBuffer(int imageIndex){
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        if (vkBeginCommandBuffer(commandBuffers[imageIndex], &beginInfo) != VK_SUCCESS) {
+            throw std::runtime_error("(vkBeginCommandBufferfailed to begin recording command buffer!");
         }
 
-        result = lbeSwapChain.submitCommandBuffers(&commandBuffers[imageIndex], &imageIndex);
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = lbeSwapChain->getRenderPass();
+        renderPassInfo.framebuffer = lbeSwapChain->getFrameBuffer(imageIndex);
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = lbeSwapChain->getSwapChainExtent();
+
+        std::array<VkClearValue, 2> clearValues{};
+        clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
+        clearValues[1].depthStencil = {1.0f, 0};
+
+        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+
+        vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;  
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(lbeSwapChain->getSwapChainExtent().width);
+        viewport.height = static_cast<float>(lbeSwapChain->getSwapChainExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = lbeSwapChain->getSwapChainExtent();
+
+        vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
+
+        lbePipeline->bind(commandBuffers[imageIndex]);
+        lbeModel->bind(commandBuffers[imageIndex]);
+        lbeModel->draw(commandBuffers[imageIndex]);
+
+        vkCmdEndRenderPass(commandBuffers[imageIndex]);
+
+        if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) {
+            throw std::runtime_error("(vkEndCommandBuffer)failed to record command buffer!");
+        }
+    }
+
+    void FirstApp::drawFrame(){
+        uint32_t imageIndex;
+        auto result = lbeSwapChain->acquireNextImage(&imageIndex);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            recreateSwapChain();
+            return;
+        }
+
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            throw std::runtime_error("(lbeSwapChain->acquireNextImagefailed to acquire next swap chain image!");
+        }
+
+        recordCommandBuffer(imageIndex);
+
+        result = lbeSwapChain->submitCommandBuffers(&commandBuffers[imageIndex], &imageIndex);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || lbeWindow.wasWindowResized()) {
+            lbeWindow.resetWindowResizedFlag();
+            recreateSwapChain();
+            return;
+        }   
+
         if (result != VK_SUCCESS) {
             throw std::runtime_error("(lbeSwapChain.submitCommandBuffers) failed to present swap chain image!");
         }

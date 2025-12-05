@@ -32,11 +32,14 @@ namespace lbe {
             void createPipelineLayout();
             void createPipeline();
             void createCommandBuffers();
+            void freeCommandBuffers();
             void drawFrame();
+            void recreateSwapChain();
+            void recordCommandBuffer(int imageIndex);
 
             LbeWindow lbeWindow{WIDTH, HEIGHT, "lbeEngine -vulkan Window"};
             LbeDevice lbeDevice{lbeWindow};
-            LbeSwapChain lbeSwapChain{lbeDevice, lbeWindow.getExtent()};
+            std::unique_ptr<LbeSwapChain> lbeSwapChain;
             std::unique_ptr<LbePipeline> lbePipeline;
             VkPipelineLayout pipelineLayout;
             std::vector<VkCommandBuffer> commandBuffers;

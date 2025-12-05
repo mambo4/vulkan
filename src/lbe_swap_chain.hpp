@@ -8,6 +8,7 @@
 // std lib headers
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace lbe {
 
@@ -16,10 +17,11 @@ class LbeSwapChain {
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
   LbeSwapChain(LbeDevice &deviceRef, VkExtent2D windowExtent);
+  LbeSwapChain(LbeDevice &deviceRef, VkExtent2D windowExtent  , std::shared_ptr<LbeSwapChain> previous);
   ~LbeSwapChain();
 
   LbeSwapChain(const LbeSwapChain &) = delete;
-  void operator=(const LbeSwapChain &) = delete;
+  LbeSwapChain& operator=(const LbeSwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
   VkRenderPass getRenderPass() { return renderPass; }
@@ -39,6 +41,7 @@ class LbeSwapChain {
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
  private:
+  void init();
   void createSwapChain();
   void createImageViews();
   void createDepthResources();
@@ -69,7 +72,8 @@ class LbeSwapChain {
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
-
+  std::shared_ptr<LbeSwapChain> oldSwapChain;
+  
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;
   std::vector<VkFence> inFlightFences;

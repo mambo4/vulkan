@@ -29,9 +29,18 @@ namespace lbe {
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    }
 
+    void LbeWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+        auto lbeWindow = reinterpret_cast<LbeWindow*>(glfwGetWindowUserPointer(window));
+        lbeWindow->framebufferResized = true;
+        lbeWindow->width = width;
+        lbeWindow->height = height; 
+        lbeWindow->framebufferResized = true;
     }
 } 
