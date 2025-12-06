@@ -5,7 +5,9 @@
 #include "lbe_device.hpp"
 #include "lbe_swap_chain.hpp"
 #include "lbe_model.hpp"
+#include "lbe_gameObject.hpp"
 
+//std
 #include <memory>
 #include <vector>
 
@@ -27,7 +29,7 @@ namespace lbe {
         void run();
 
         private:
-            void loadModels();
+            void loadGameObjects();
             void createPipelineLayout();
             void createPipeline();
             void createCommandBuffers();
@@ -35,6 +37,7 @@ namespace lbe {
             void drawFrame();
             void recreateSwapChain();
             void recordCommandBuffer(int imageIndex);
+            void renderGameObjects(VkCommandBuffer commandBuffer);
 
             LbeWindow lbeWindow{WIDTH, HEIGHT, "lbeEngine -vulkan Window"};
             LbeDevice lbeDevice{lbeWindow};
@@ -42,7 +45,7 @@ namespace lbe {
             std::unique_ptr<LbePipeline> lbePipeline;
             VkPipelineLayout pipelineLayout;
             std::vector<VkCommandBuffer> commandBuffers;
-            std::unique_ptr<LbeModel> lbeModel;
+            std::vector<LbeGameObject> gameObjects;
      }; 
 
 } 
