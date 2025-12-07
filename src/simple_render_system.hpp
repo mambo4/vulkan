@@ -4,6 +4,8 @@
 #include "lbe_device.hpp"
 #include "lbe_model.hpp"
 #include "lbe_game_object.hpp"
+#include "lbe_camera.hpp"
+
 //std
 #include <memory>
 #include <vector>
@@ -21,7 +23,9 @@ namespace lbe {
             SimpleRenderSystem(const SimpleRenderSystem&) = delete;
             SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-            void renderGameObjects(VkCommandBuffer commandBuffer,  std::vector<LbeGameObject>& gameObjects);
+            void renderGameObjects(
+                VkCommandBuffer commandBuffer,
+                std::vector<LbeGameObject>& gameObjects,const LbeCamera& camera);
 
         private:
             void createPipelineLayout();

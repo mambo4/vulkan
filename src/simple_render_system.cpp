@@ -68,7 +68,10 @@ namespace lbe {
             pipelineConfig);
     }
 
-    void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer,std::vector<LbeGameObject> &gameObjects) {
+    void SimpleRenderSystem::renderGameObjects(
+                VkCommandBuffer commandBuffer,
+                std::vector<LbeGameObject>& gameObjects,
+                const LbeCamera& camera){
         lbePipeline->bind(commandBuffer);
 
         for (auto& obj : gameObjects) {
@@ -76,7 +79,7 @@ namespace lbe {
             obj.transform.rotation.x =glm::mod(obj.transform.rotation.x + 0.005f, glm::two_pi<float>());
             SimplePushConstantData push{};
             push.color = obj.color;
-            push.transform = obj.transform.mat4();
+            push.transform = camera.getProjection() * obj.transform.mat4(); //temp : mat* is ultimately for GPU
 
             vkCmdPushConstants(
                 commandBuffer,

@@ -1,5 +1,6 @@
 #include "first_app.hpp"
 #include "simple_render_system.hpp"
+#include "lbe_camera.hpp"
 //libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -22,14 +23,19 @@ namespace lbe {
     void FirstApp::run() {
 
         SimpleRenderSystem simpleRenderSystem{lbeDevice, lbeRenderer.getSwapChainRenderPass()};
- 
+        LbeCamera camera{};
+
 
         while(!lbeWindow.shouldClose()) {
             glfwPollEvents();
+
+            float aspect = lbeRenderer.getAspectRatio();
+            // camera.setOrthographicProjection( -aspect, aspect,-1.0f, 1.0f,-1.0f, 1.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect,0.1f,10.0f);
             if(auto commandBuffer = lbeRenderer.beginFrame()) {
                 lbeRenderer.beginSwapChainRenderPass(commandBuffer);
 
-                simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
+                simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects,camera);
 
                 lbeRenderer.endSwapChainRenderPass(commandBuffer);
                 lbeRenderer.endFrame();
@@ -101,7 +107,7 @@ namespace lbe {
         std::shared_ptr<LbeModel> LbeModel = createCubeModel(lbeDevice, {0.0f, 0.0f, 0.0f});
         auto cube = LbeGameObject::createGameObject();
         cube.model = LbeModel;
-        cube.transform.translation = {0.0f, 0.0f, 0.5f}; // translate cube back(+) from 0.0z to be in viewing volume
+        cube.transform.translation = {0.0f, 0.0f, 2.5f}; // translate cube back(+) from 0.0z to be in viewing volume
         cube.transform.scale = {0.5f, 0.5f, 0.5f};
         gameObjects.push_back(std::move(cube));
     }

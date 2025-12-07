@@ -25,6 +25,8 @@ namespace lbe {
             VkRenderPass getSwapChainRenderPass() const {
                 return lbeSwapChain->getRenderPass();
             }
+            float getAspectRatio() const {return lbeSwapChain->extentAspectRatio();}   
+
             bool isFrameInProgress() const { return isFrameStarted; }
             VkCommandBuffer getCurrentCommandBuffer() const {
                 assert(isFrameStarted && "Cannot getCurrentCommandBuffer() when frame is not in progress");
