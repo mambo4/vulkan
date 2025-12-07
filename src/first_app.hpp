@@ -1,12 +1,10 @@
 #pragma once
 
 #include "lbe_window.hpp"
-#include "lbe_pipeline.hpp"
 #include "lbe_device.hpp"
-#include "lbe_swap_chain.hpp"
 #include "lbe_model.hpp"
-#include "lbe_gameObject.hpp"
-
+#include "lbe_game_object.hpp"
+#include "lbe_renderer.hpp"
 //std
 #include <memory>
 #include <vector>
@@ -30,20 +28,11 @@ namespace lbe {
 
         private:
             void loadGameObjects();
-            void createPipelineLayout();
-            void createPipeline();
-            void createCommandBuffers();
-            void freeCommandBuffers();
-            void drawFrame();
-            void recreateSwapChain();
-            void recordCommandBuffer(int imageIndex);
-            void renderGameObjects(VkCommandBuffer commandBuffer);
 
             LbeWindow lbeWindow{WIDTH, HEIGHT, "lbeEngine -vulkan Window"};
             LbeDevice lbeDevice{lbeWindow};
-            std::unique_ptr<LbeSwapChain> lbeSwapChain;
-            std::unique_ptr<LbePipeline> lbePipeline;
-            VkPipelineLayout pipelineLayout;
+            LbeRenderer lbeRenderer{lbeWindow, lbeDevice};
+
             std::vector<VkCommandBuffer> commandBuffers;
             std::vector<LbeGameObject> gameObjects;
      }; 
