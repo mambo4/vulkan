@@ -24,6 +24,7 @@ namespace lbe {
             FirstApp(const FirstApp&) = delete;
             FirstApp& operator=(const FirstApp&) = delete;
 
+            static constexpr float MAX_FRAME_TIME = 0.016f;
         void run();
 
         private:

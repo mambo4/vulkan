@@ -41,7 +41,7 @@ namespace lbe {
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
-            frameTime = std::min(frameTime, 0.016f); //cap max frame time to 16ms
+            frameTime = std::min(frameTime,MAX_FRAME_TIME ); //cap max frame time to 16ms
 
             cameraController.moveInPlaneXZ(lbeWindow.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
