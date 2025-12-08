@@ -1,6 +1,8 @@
 #include "first_app.hpp"
 #include "simple_render_system.hpp"
 #include "lbe_camera.hpp"
+#include "keyboard_movement_controller.hpp"
+
 //libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -8,6 +10,7 @@
 #include <glm/gtc/constants.hpp>
 
 //std
+#include <chrono>
 #include <stdexcept>
 #include <array>
 
@@ -24,14 +27,27 @@ namespace lbe {
 
         SimpleRenderSystem simpleRenderSystem{lbeDevice, lbeRenderer.getSwapChainRenderPass()};
         LbeCamera camera{};
-        //camera.setViewDirection(glm::vec3{0.0f}, glm::vec3{0.5f, 0.0f, 1.0f});
-        camera.setViewTarget(glm::vec3{-1.0f,-1.0f, -20.0f}, glm::vec3{0.0f, 0.0f,  2.5f});
+        camera.setViewTarget(glm::vec3{-1.0f,-1.0f, -2.5f}, glm::vec3{0.0f, 0.0f,  2.5f});
+
+        auto viewerObject = LbeGameObject::createGameObject();
+        KeyboardMovementController cameraController{};
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+
         while(!lbeWindow.shouldClose()) {
             glfwPollEvents();
+            
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            currentTime = newTime;
+
+            frameTime = std::min(frameTime, 0.016f); //cap max frame time to 16ms
+
+            cameraController.moveInPlaneXZ(lbeWindow.getGLFWwindow(), frameTime, viewerObject);
+            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
             float aspect = lbeRenderer.getAspectRatio();
-            // camera.setOrthographicProjection( -aspect, aspect,-1.0f, 1.0f,-1.0f, 1.0f);
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect,0.1f,100.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect,0.1f,10.0f);
             if(auto commandBuffer = lbeRenderer.beginFrame()) {
                 lbeRenderer.beginSwapChainRenderPass(commandBuffer);
 

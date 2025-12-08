@@ -24,7 +24,7 @@ class LbeWindow {
       VkExtent2D getExtent() const {return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};} 
       bool wasWindowResized() const { return framebufferResized; }
       void resetWindowResizedFlag() {framebufferResized = false; }
-      
+      GLFWwindow* getGLFWwindow() const { return window; }
       void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
       
     private:
