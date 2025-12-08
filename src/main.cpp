@@ -2,10 +2,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
-
+#include <direct.h>
 
 int main() {
-
+    std::cout << "Current working directory: " << getcwd(nullptr, 0) << std::endl;
     lbe::FirstApp app{};
 
     try{
