@@ -1,7 +1,7 @@
 #pragma once
 #include "m4_model.hpp"
 //libs
-#include <glm/gtc/matrix_transform.hpp>
+#include <gtc/matrix_transform.hpp>
 //std
 #include <memory>
 

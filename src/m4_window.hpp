@@ -1,7 +1,7 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN // tells '#include <GLFW/glfw3.h>' to include the Vulkan headers
-#include <GLFW/glfw3.h>
+#include <glfw3.h>
 #include <string>
 
 namespace m4 {
