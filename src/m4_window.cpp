@@ -1,22 +1,22 @@
-#include "lbe_window.hpp"
+#include "m4_window.hpp"
 #include <stdexcept>
 
-namespace lbe {
+namespace m4 {
     
-    LbeWindow::LbeWindow(int w, int h, std::string title) : width{w}, height{h}, title{title} {
+    M4Window::M4Window(int w, int h, std::string title) : width{w}, height{h}, title{title} {
 
         initWindow();
 
     };
 
-    LbeWindow::~LbeWindow() {
+    M4Window::~M4Window() {
 
         glfwDestroyWindow(window);
         glfwTerminate();
 
     }
 
-    void LbeWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
+    void M4Window::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
 
         if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
@@ -24,7 +24,7 @@ namespace lbe {
 
     }
     
-    void LbeWindow::initWindow() {
+    void M4Window::initWindow() {
 
         glfwInit();
 
@@ -36,11 +36,11 @@ namespace lbe {
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     }
 
-    void LbeWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto lbeWindow = reinterpret_cast<LbeWindow*>(glfwGetWindowUserPointer(window));
-        lbeWindow->framebufferResized = true;
-        lbeWindow->width = width;
-        lbeWindow->height = height; 
-        lbeWindow->framebufferResized = true;
+    void M4Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+        auto m4Window = reinterpret_cast<M4Window*>(glfwGetWindowUserPointer(window));
+        m4Window->framebufferResized = true;
+        m4Window->width = width;
+        m4Window->height = height; 
+        m4Window->framebufferResized = true;
     }
 } 

@@ -1,23 +1,23 @@
 #pragma once
 
-#include "lbe_pipeline.hpp"
-#include "lbe_device.hpp"
-#include "lbe_model.hpp"
-#include "lbe_game_object.hpp"
-#include "lbe_camera.hpp"
+#include "m4_pipeline.hpp"
+#include "m4_device.hpp"
+#include "m4_model.hpp"
+#include "m4_game_object.hpp"
+#include "m4_camera.hpp"
 
 //std
 #include <memory>
 #include <vector>
 
 
-namespace lbe {
+namespace m4 {
     
      class SimpleRenderSystem{
         
         public: 
         
-            SimpleRenderSystem(LbeDevice& device, VkRenderPass renderPass);
+            SimpleRenderSystem(M4Device& device, VkRenderPass renderPass);
             ~SimpleRenderSystem();
 
             SimpleRenderSystem(const SimpleRenderSystem&) = delete;
@@ -25,15 +25,15 @@ namespace lbe {
 
             void renderGameObjects(
                 VkCommandBuffer commandBuffer,
-                std::vector<LbeGameObject>& gameObjects,const LbeCamera& camera);
+                std::vector<M4GameObject>& gameObjects,const M4Camera& camera);
 
         private:
             void createPipelineLayout();
             void createPipeline(VkRenderPass renderPass);
 
-            LbeDevice &lbeDevice;
+            M4Device &m4Device;
 
-            std::unique_ptr<LbePipeline> lbePipeline;
+            std::unique_ptr<M4Pipeline> m4Pipeline;
             VkPipelineLayout pipelineLayout;
             std::vector<VkCommandBuffer> commandBuffers;
      }; 

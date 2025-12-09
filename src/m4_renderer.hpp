@@ -1,31 +1,31 @@
 #pragma once
 
-#include "lbe_window.hpp"
-#include "lbe_device.hpp"
-#include "lbe_swap_chain.hpp"
-#include "lbe_model.hpp"
+#include "m4_window.hpp"
+#include "m4_device.hpp"
+#include "m4_swap_chain.hpp"
+#include "m4_model.hpp"
 
 //std
 #include <memory>
 #include <vector>
 #include <cassert>  
 
-namespace lbe {
+namespace m4 {
     
-     class LbeRenderer{
+     class M4Renderer{
         
         public: 
         
-            LbeRenderer(LbeWindow& window, LbeDevice& device);
-            ~LbeRenderer();
+            M4Renderer(M4Window& window, M4Device& device);
+            ~M4Renderer();
 
-            LbeRenderer(const LbeRenderer&) = delete;
-            LbeRenderer& operator=(const LbeRenderer&) = delete;
+            M4Renderer(const M4Renderer&) = delete;
+            M4Renderer& operator=(const M4Renderer&) = delete;
 
             VkRenderPass getSwapChainRenderPass() const {
-                return lbeSwapChain->getRenderPass();
+                return m4SwapChain->getRenderPass();
             }
-            float getAspectRatio() const {return lbeSwapChain->extentAspectRatio();}   
+            float getAspectRatio() const {return m4SwapChain->extentAspectRatio();}   
 
             bool isFrameInProgress() const { return isFrameStarted; }
             VkCommandBuffer getCurrentCommandBuffer() const {
@@ -49,9 +49,9 @@ namespace lbe {
             void freeCommandBuffers();
             void recreateSwapChain();
 
-            LbeWindow& lbeWindow;
-            LbeDevice& lbeDevice;
-            std::unique_ptr<LbeSwapChain> lbeSwapChain;
+            M4Window& m4Window;
+            M4Device& m4Device;
+            std::unique_ptr<M4SwapChain> m4SwapChain;
             std::vector<VkCommandBuffer> commandBuffers;
 
             uint32_t currentImageIndex;

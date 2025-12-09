@@ -1,9 +1,10 @@
 
 # include "keyboard_movement_controller.hpp"
 # include <limits>
-namespace lbe {
+# include <iostream>
+namespace m4 {
 
-    void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, LbeGameObject& gameObject) {
+    void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, M4GameObject& gameObject) {
         glm::vec3 rotate{0.0f};
 
         if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) {rotate.y += 1.f;}
@@ -11,6 +12,18 @@ namespace lbe {
         if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS) { rotate.x += 1.f;}
         if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS) {rotate.x -= 1.f;}
 
+        glfwGetCursorPos(window, &xpos, &ypos);
+        if(oldx==0.0){oldx=xpos;}
+        if(oldy==0.0){oldy=ypos;}
+
+        xOffset=(float)(xpos - oldx)*mouseSensitivity;
+        yOffset=(float)(ypos - oldy)*mouseSensitivity;
+
+        oldx=xpos;
+        oldy=ypos;
+        rotate.y += xOffset;
+        rotate.x -= yOffset;
+        // std::cout<<"xOffset: "<<xOffset<<" yOffset: "<<yOffset<<std::endl;
         // rotation 0 will break the math, only rotate if > epsilon
         if (glm::dot(rotate,rotate) > std::numeric_limits<float>::epsilon()) {
             gameObject.transform.rotation += lookSpeed * dt *glm::normalize(rotate);
@@ -41,4 +54,4 @@ namespace lbe {
         }
     }
 
-}  // namespace lbe
+}  // namespace m4

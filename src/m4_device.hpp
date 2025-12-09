@@ -1,12 +1,12 @@
 #pragma once
 
-#include "lbe_window.hpp"
+#include "m4_window.hpp"
 
 // std lib headers
 #include <string>
 #include <vector>
 
-namespace lbe {
+namespace m4 {
 
 struct SwapChainSupportDetails {
   VkSurfaceCapabilitiesKHR capabilities;
@@ -22,7 +22,7 @@ struct QueueFamilyIndices {
   bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
 };
 
-class LbeDevice {
+class M4Device {
  public:
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
@@ -30,14 +30,14 @@ class LbeDevice {
   const bool enableValidationLayers = true;
 #endif
 
-  LbeDevice(LbeWindow &window);
-  ~LbeDevice();
+  M4Device(M4Window &window);
+  ~M4Device();
 
   // Not copyable or movable
-  LbeDevice(const LbeDevice &) = delete;
-  LbeDevice &operator=(const LbeDevice &) = delete;
-  LbeDevice(LbeDevice &&) = delete;
-  LbeDevice &operator=(LbeDevice &&) = delete;
+  M4Device(const M4Device &) = delete;
+  M4Device &operator=(const M4Device &) = delete;
+  M4Device(M4Device &&) = delete;
+  M4Device &operator=(M4Device &&) = delete;
 
   VkCommandPool getCommandPool() { return commandPool; }
   VkDevice device() { return device_; }
@@ -93,7 +93,7 @@ class LbeDevice {
   VkInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-  LbeWindow &window;
+  M4Window &window;
   VkCommandPool commandPool;
 
   VkDevice device_;
@@ -105,4 +105,4 @@ class LbeDevice {
   const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 
-}  // namespace lbe
+}  // namespace m4

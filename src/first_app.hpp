@@ -1,16 +1,16 @@
 #pragma once
 
-#include "lbe_window.hpp"
-#include "lbe_device.hpp"
-#include "lbe_model.hpp"
-#include "lbe_game_object.hpp"
-#include "lbe_renderer.hpp"
+#include "m4_window.hpp"
+#include "m4_device.hpp"
+#include "m4_model.hpp"
+#include "m4_game_object.hpp"
+#include "m4_renderer.hpp"
 //std
 #include <memory>
 #include <vector>
 
 
-namespace lbe {
+namespace m4 {
     
      class FirstApp{
         
@@ -30,12 +30,12 @@ namespace lbe {
         private:
             void loadGameObjects();
 
-            LbeWindow lbeWindow{WIDTH, HEIGHT, "lbeEngine -vulkan Window"};
-            LbeDevice lbeDevice{lbeWindow};
-            LbeRenderer lbeRenderer{lbeWindow, lbeDevice};
+            M4Window m4Window{WIDTH, HEIGHT, "m4Engine -vulkan Window"};
+            M4Device m4Device{m4Window};
+            M4Renderer m4Renderer{m4Window, m4Device};
 
             std::vector<VkCommandBuffer> commandBuffers;
-            std::vector<LbeGameObject> gameObjects;
+            std::vector<M4GameObject> gameObjects;
      }; 
 
 } 

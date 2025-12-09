@@ -4,17 +4,17 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
-namespace lbe {
+namespace m4 {
 
-class LbeWindow {
+class M4Window {
 
     public:
 
-      LbeWindow(int w, int h, std::string title);
-      ~LbeWindow();
+      M4Window(int w, int h, std::string title);
+      ~M4Window();
     
-      LbeWindow(const LbeWindow&) = delete;
-      LbeWindow& operator=(const LbeWindow&) = delete;
+      M4Window(const M4Window&) = delete;
+      M4Window& operator=(const M4Window&) = delete;
     
 
       bool shouldClose() const {
@@ -38,4 +38,4 @@ class LbeWindow {
       GLFWwindow* window;
 };
 
-}// namespace lbe
+}// namespace m4

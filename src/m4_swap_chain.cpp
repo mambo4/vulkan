@@ -1,4 +1,4 @@
-#include "lbe_swap_chain.hpp"
+#include "m4_swap_chain.hpp"
 
 // std
 #include <array>
@@ -9,14 +9,14 @@
 #include <set>
 #include <stdexcept>
 
-namespace lbe {
+namespace m4 {
 
-LbeSwapChain::LbeSwapChain(LbeDevice &deviceRef, VkExtent2D extent)
+M4SwapChain::M4SwapChain(M4Device &deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
   init();
 }
 
-LbeSwapChain::LbeSwapChain(LbeDevice &deviceRef, VkExtent2D extent, std::shared_ptr<LbeSwapChain> previous)
+M4SwapChain::M4SwapChain(M4Device &deviceRef, VkExtent2D extent, std::shared_ptr<M4SwapChain> previous)
     : device{deviceRef}, windowExtent{extent}, oldSwapChain{previous} {
   init();
 
@@ -25,7 +25,7 @@ LbeSwapChain::LbeSwapChain(LbeDevice &deviceRef, VkExtent2D extent, std::shared_
 
 }
 
-void LbeSwapChain::init() {
+void M4SwapChain::init() {
   createSwapChain();
   createImageViews();
   createRenderPass();
@@ -34,7 +34,7 @@ void LbeSwapChain::init() {
   createSyncObjects();
 }
 
-LbeSwapChain::~LbeSwapChain() {
+M4SwapChain::~M4SwapChain() {
   for (auto imageView : swapChainImageViews) {
     vkDestroyImageView(device.device(), imageView, nullptr);
   }
@@ -69,7 +69,7 @@ LbeSwapChain::~LbeSwapChain() {
   }
 }
 
-VkResult LbeSwapChain::acquireNextImage(uint32_t *imageIndex) {
+VkResult M4SwapChain::acquireNextImage(uint32_t *imageIndex) {
   vkWaitForFences(
       device.device(),
       1,
@@ -88,7 +88,7 @@ VkResult LbeSwapChain::acquireNextImage(uint32_t *imageIndex) {
   return result;
 }
 
-VkResult LbeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
+VkResult M4SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
   if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
     vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
   }
@@ -136,7 +136,7 @@ VkResult LbeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint
   return result;
 }
 
-void LbeSwapChain::createSwapChain() {
+void M4SwapChain::createSwapChain() {
   SwapChainSupportDetails swapChainSupport = device.getSwapChainSupport();
 
   VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -197,7 +197,7 @@ void LbeSwapChain::createSwapChain() {
   swapChainExtent = extent;
 }
 
-void LbeSwapChain::createImageViews() {
+void M4SwapChain::createImageViews() {
   swapChainImageViews.resize(swapChainImages.size());
   for (size_t i = 0; i < swapChainImages.size(); i++) {
     VkImageViewCreateInfo viewInfo{};
@@ -218,7 +218,7 @@ void LbeSwapChain::createImageViews() {
   }
 }
 
-void LbeSwapChain::createRenderPass() {
+void M4SwapChain::createRenderPass() {
   VkAttachmentDescription depthAttachment{};
   depthAttachment.format = findDepthFormat();
   depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -279,7 +279,7 @@ void LbeSwapChain::createRenderPass() {
   }
 }
 
-void LbeSwapChain::createFramebuffers() {
+void M4SwapChain::createFramebuffers() {
   swapChainFramebuffers.resize(imageCount());
   for (size_t i = 0; i < imageCount(); i++) {
     std::array<VkImageView, 2> attachments = {swapChainImageViews[i], depthImageViews[i]};
@@ -304,7 +304,7 @@ void LbeSwapChain::createFramebuffers() {
   }
 }
 
-void LbeSwapChain::createDepthResources() {
+void M4SwapChain::createDepthResources() {
   VkFormat depthFormat = findDepthFormat();
   swapChainDepthFormat = depthFormat;
   VkExtent2D swapChainExtent = getSwapChainExtent();
@@ -353,7 +353,7 @@ void LbeSwapChain::createDepthResources() {
   }
 }
 
-void LbeSwapChain::createSyncObjects() {
+void M4SwapChain::createSyncObjects() {
   imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
   // renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
   // see comments https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
@@ -383,7 +383,7 @@ void LbeSwapChain::createSyncObjects() {
   }
 }
 
-VkSurfaceFormatKHR LbeSwapChain::chooseSwapSurfaceFormat(
+VkSurfaceFormatKHR M4SwapChain::chooseSwapSurfaceFormat(
     const std::vector<VkSurfaceFormatKHR> &availableFormats) {
   for (const auto &availableFormat : availableFormats) {
     if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
@@ -395,7 +395,7 @@ VkSurfaceFormatKHR LbeSwapChain::chooseSwapSurfaceFormat(
   return availableFormats[0];
 }
 
-VkPresentModeKHR LbeSwapChain::chooseSwapPresentMode(
+VkPresentModeKHR M4SwapChain::chooseSwapPresentMode(
    const std::vector<VkPresentModeKHR> &availablePresentModes) {
   for (const auto &availablePresentMode : availablePresentModes) {
     if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -416,7 +416,7 @@ VkPresentModeKHR LbeSwapChain::chooseSwapPresentMode(
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D LbeSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+VkExtent2D M4SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
   if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
     return capabilities.currentExtent;
   } else {
@@ -432,7 +432,7 @@ VkExtent2D LbeSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabi
   }
 }
 
-VkFormat LbeSwapChain::findDepthFormat() {
+VkFormat M4SwapChain::findDepthFormat() {
   return device.findSupportedFormat(
       {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
       VK_IMAGE_TILING_OPTIMAL,

@@ -1,8 +1,8 @@
-#include "lbe_camera.hpp"
+#include "m4_camera.hpp"
 
-namespace lbe {
+namespace m4 {
 
-    void LbeCamera::setOrthographicProjection(
+    void M4Camera::setOrthographicProjection(
         float left, float right, float top, float bottom, float near, float far) {
         projectionMatrix = glm::mat4{1.0f};
         projectionMatrix[0][0] = 2.f / (right - left);
@@ -13,7 +13,7 @@ namespace lbe {
         projectionMatrix[3][2] = -near / (far - near);
     }
 
-    void LbeCamera::setPerspectiveProjection(float fovy, float aspect, float near, float far) {
+    void M4Camera::setPerspectiveProjection(float fovy, float aspect, float near, float far) {
         assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
         const float tanHalfFovy = tan(fovy / 2.f);
         projectionMatrix = glm::mat4{0.0f};
@@ -24,7 +24,7 @@ namespace lbe {
         projectionMatrix[3][2] = -(far * near) / (far - near);
     }
 
-    void LbeCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
+    void M4Camera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
         //orthonormal basis vectors, aligned to direction and up vectors
         const glm::vec3 w{glm::normalize(direction)};
         const glm::vec3 u{glm::normalize(glm::cross(w, up))};
@@ -45,12 +45,12 @@ namespace lbe {
         viewMatrix[3][2] = -glm::dot(w, position);
     }
 
-    void LbeCamera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
+    void M4Camera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
         // (to_vector) - (from_vector)
         setViewDirection(position, target - position, up);
     }
 
-    void LbeCamera::setViewYXZ(glm::vec3 position, glm::vec3 rotation) {
+    void M4Camera::setViewYXZ(glm::vec3 position, glm::vec3 rotation) {
         const float c3 = glm::cos(rotation.z);
         const float s3 = glm::sin(rotation.z);
         const float c2 = glm::cos(rotation.x);
@@ -75,4 +75,4 @@ namespace lbe {
         viewMatrix[3][2] = -glm::dot(w, position);
     }
 
-}  // namespace lbe
+}  // namespace m4

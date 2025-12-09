@@ -1,5 +1,5 @@
-#include "lbe_pipeline.hpp"
-#include "lbe_model.hpp"
+#include "m4_pipeline.hpp"
+#include "m4_model.hpp"
 
 //std
 #include <fstream>
@@ -7,23 +7,23 @@
 #include <iostream>
 #include <cassert>
 
-namespace lbe {
+namespace m4 {
 
-    LbePipeline::LbePipeline(
-            LbeDevice& device, 
+    M4Pipeline::M4Pipeline(
+            M4Device& device, 
             const std::string& vertFilepath, 
             const std::string& fragFilepath , 
-            const PipelineConfigInfo& configInfo ) : lbeDevice{device} {
+            const PipelineConfigInfo& configInfo ) : m4Device{device} {
         createGraphicsPipeline(vertFilepath, fragFilepath,configInfo);
     }
 
-    LbePipeline::~LbePipeline() {
-        vkDestroyShaderModule(lbeDevice.device(), fragShaderModule, nullptr);
-        vkDestroyShaderModule(lbeDevice.device(), vertShaderModule, nullptr);
-        vkDestroyPipeline(lbeDevice.device(), graphicsPipeline, nullptr);
+    M4Pipeline::~M4Pipeline() {
+        vkDestroyShaderModule(m4Device.device(), fragShaderModule, nullptr);
+        vkDestroyShaderModule(m4Device.device(), vertShaderModule, nullptr);
+        vkDestroyPipeline(m4Device.device(), graphicsPipeline, nullptr);
     }
 
-    std::vector<char> LbePipeline::readFile(const std::string& filepath) {
+    std::vector<char> M4Pipeline::readFile(const std::string& filepath) {
         
         std::ifstream file{filepath, std::ios::ate |  std::ios::binary};
         if (!file.is_open()) {
@@ -37,7 +37,7 @@ namespace lbe {
         return buffer; 
     }
 
-    void LbePipeline::createGraphicsPipeline( 
+    void M4Pipeline::createGraphicsPipeline( 
             const std::string & vertFilepath, 
             const std::string & fragFilepath,
             const PipelineConfigInfo & configInfo) {
@@ -66,8 +66,8 @@ namespace lbe {
         shaderStages[1].pNext = nullptr;
         shaderStages[1].pSpecializationInfo = nullptr;
 
-        auto bindingDescriptions = LbeModel::Vertex::getBindingDescriptions();
-        auto attributeDescriptions = LbeModel::Vertex::getAttributeDescriptions();
+        auto bindingDescriptions = M4Model::Vertex::getBindingDescriptions();
+        auto attributeDescriptions = M4Model::Vertex::getAttributeDescriptions();
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -97,7 +97,7 @@ namespace lbe {
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
         if (vkCreateGraphicsPipelines(
-                lbeDevice.device(),
+                m4Device.device(),
                 VK_NULL_HANDLE,
                 1,
                 &pipelineInfo,
@@ -107,23 +107,23 @@ namespace lbe {
         }
     }   
 
-    void LbePipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule){
+    void M4Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule){
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size();
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-        if (vkCreateShaderModule(lbeDevice.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+        if (vkCreateShaderModule(m4Device.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
             throw std::runtime_error("failed to create shader module");
         } 
     }
 
 
-    void LbePipeline::bind(VkCommandBuffer commandBuffer) {
+    void M4Pipeline::bind(VkCommandBuffer commandBuffer) {
         vkCmdBindPipeline( commandBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
     }
 
-    void LbePipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
+    void M4Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
         configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lbe_device.hpp"
+#include "m4_device.hpp"
 
 
 #define GLM_FORCE_RADIANS
@@ -9,8 +9,8 @@
 
 #include <vector>
 
-namespace lbe {
-    class LbeModel {
+namespace m4 {
+    class M4Model {
 
     public:
 
@@ -21,11 +21,16 @@ namespace lbe {
             static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
         };
 
-        LbeModel( LbeDevice &device, const std::vector<Vertex> &vertices);
-        ~LbeModel();
+        struct M4Mesh {
+            std::vector<Vertex> vertices{};
+            std::vector<uint32_t> indices{};
+        };  
 
-        LbeModel(const LbeModel&) = delete;
-        LbeModel& operator=(const LbeModel&) = delete;
+        M4Model( M4Device &device, const M4Model::M4Mesh &builder);
+        ~M4Model();
+
+        M4Model(const M4Model&) = delete;
+        M4Model& operator=(const M4Model&) = delete;
 
         void bind(VkCommandBuffer commandBuffer);
         void draw(VkCommandBuffer commandBuffer);
@@ -33,11 +38,16 @@ namespace lbe {
     private:
 
         void createVertexBuffers(const std::vector<Vertex>& vertices);
+        void createIndexBuffers(const std::vector<uint32_t>& indices);
 
-        LbeDevice& lbeDevice;
+        M4Device& m4Device;
         VkBuffer vertexBuffer;
+        VkBuffer indexBuffer;
         VkDeviceMemory vertexBufferMemory;
+        VkDeviceMemory indexBufferMemory;
         uint32_t vertexCount;
+        uint32_t indexCount;
+        bool hasIndexBuffer = false;
 
     };
-}  // namespace lbe
+}  // namespace m4

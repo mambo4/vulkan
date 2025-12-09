@@ -1,38 +1,38 @@
-#include "lbe_renderer.hpp"
+#include "m4_renderer.hpp"
 
 #include <stdexcept>
 #include <array>
 
 
-namespace lbe {
+namespace m4 {
 
-    LbeRenderer::LbeRenderer(LbeWindow& window, LbeDevice& device) : lbeWindow{window}, lbeDevice{device} {
+    M4Renderer::M4Renderer(M4Window& window, M4Device& device) : m4Window{window}, m4Device{device} {
         recreateSwapChain();
         createCommandBuffers();
     }
 
-    LbeRenderer::~LbeRenderer() {
+    M4Renderer::~M4Renderer() {
         freeCommandBuffers();
     }
 
     //game loop
 
-    void LbeRenderer::recreateSwapChain() {
-        auto extent = lbeWindow.getExtent();
+    void M4Renderer::recreateSwapChain() {
+        auto extent = m4Window.getExtent();
         while (extent.width == 0 || extent.height == 0) {
-            extent = lbeWindow.getExtent();
+            extent = m4Window.getExtent();
             glfwWaitEvents();
         }
 
-        vkDeviceWaitIdle(lbeDevice.device());
+        vkDeviceWaitIdle(m4Device.device());
 
-        if (lbeSwapChain==nullptr) {
-            lbeSwapChain = std::make_unique<LbeSwapChain>(lbeDevice, extent);
+        if (m4SwapChain==nullptr) {
+            m4SwapChain = std::make_unique<M4SwapChain>(m4Device, extent);
         } else {
-            std::shared_ptr<LbeSwapChain> oldSwapChain = std::move(lbeSwapChain);
-            lbeSwapChain = std::make_unique<LbeSwapChain>(lbeDevice, extent, oldSwapChain);
+            std::shared_ptr<M4SwapChain> oldSwapChain = std::move(m4SwapChain);
+            m4SwapChain = std::make_unique<M4SwapChain>(m4Device, extent, oldSwapChain);
 
-            if(!oldSwapChain->compareSwapFormats(*lbeSwapChain.get())) {
+            if(!oldSwapChain->compareSwapFormats(*m4SwapChain.get())) {
                 throw std::runtime_error("Swap chain image or depth format has changed!");
             }
 
@@ -40,32 +40,32 @@ namespace lbe {
 
     }
 
-    void LbeRenderer::createCommandBuffers(){
+    void M4Renderer::createCommandBuffers(){
 
-        commandBuffers.resize(LbeSwapChain::MAX_FRAMES_IN_FLIGHT);
+        commandBuffers.resize(M4SwapChain::MAX_FRAMES_IN_FLIGHT);
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = lbeDevice.getCommandPool();
+        allocInfo.commandPool = m4Device.getCommandPool();
         allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-        if (vkAllocateCommandBuffers(lbeDevice.device(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(m4Device.device(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("(vkAllocateCommandBuffers) failed to allocate command buffers!");
         }
     }
     
-    void LbeRenderer::freeCommandBuffers(){
+    void M4Renderer::freeCommandBuffers(){
         vkFreeCommandBuffers(
-            lbeDevice.device(),
-            lbeDevice.getCommandPool(),
+            m4Device.device(),
+            m4Device.getCommandPool(),
             static_cast<uint32_t>(commandBuffers.size()),
             commandBuffers.data());
         commandBuffers.clear();
     }    
 
-    VkCommandBuffer LbeRenderer::beginFrame(){
+    VkCommandBuffer M4Renderer::beginFrame(){
         assert(!isFrameStarted && "Cannot call beginFrame() when frame is already in progress");
 
-        auto result = lbeSwapChain->acquireNextImage(&currentImageIndex);
+        auto result = m4SwapChain->acquireNextImage(&currentImageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             recreateSwapChain();
@@ -73,7 +73,7 @@ namespace lbe {
         }
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-            throw std::runtime_error("(lbeSwapChain->acquireNextImagefailed to acquire next swap chain image!");
+            throw std::runtime_error("(m4SwapChain->acquireNextImagefailed to acquire next swap chain image!");
         }
 
         isFrameStarted = true;
@@ -90,33 +90,33 @@ namespace lbe {
         return commandBuffer;
     }
 
-    void LbeRenderer::endFrame() {
+    void M4Renderer::endFrame() {
         assert(isFrameStarted && "Cannot call endFrame() when frame is not in progress");
         auto commandBuffer = getCurrentCommandBuffer();
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("(vkEndCommandBuffer)failed to record command buffer!");
         }
-        auto result = lbeSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || lbeWindow.wasWindowResized()) {
-            lbeWindow.resetWindowResizedFlag();
+        auto result = m4SwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m4Window.wasWindowResized()) {
+            m4Window.resetWindowResizedFlag();
             recreateSwapChain();
         } else if (result != VK_SUCCESS) {
-            throw std::runtime_error("(lbeSwapChain.submitCommandBuffers) failed to present swap chain image!");
+            throw std::runtime_error("(m4SwapChain.submitCommandBuffers) failed to present swap chain image!");
         }
         isFrameStarted = false;
-        currentFrameIndex = (currentFrameIndex + 1)% LbeSwapChain::MAX_FRAMES_IN_FLIGHT;
+        currentFrameIndex = (currentFrameIndex + 1)% M4SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
-    void LbeRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer){
+    void M4Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer){
         assert(isFrameStarted && "Cannot call beginSwapChainRenderPass() when frame is not in progress");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on command buffer from a different frame");
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = lbeSwapChain->getRenderPass();
-        renderPassInfo.framebuffer = lbeSwapChain->getFrameBuffer(currentImageIndex);
+        renderPassInfo.renderPass = m4SwapChain->getRenderPass();
+        renderPassInfo.framebuffer = m4SwapChain->getFrameBuffer(currentImageIndex);
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = lbeSwapChain->getSwapChainExtent();
+        renderPassInfo.renderArea.extent = m4SwapChain->getSwapChainExtent();
 
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = {{0.001f, 0.001f, 0.001f, 1.0f}};  
@@ -130,19 +130,19 @@ namespace lbe {
         VkViewport viewport{};
         viewport.x = 0.0f;  
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(lbeSwapChain->getSwapChainExtent().width);
-        viewport.height = static_cast<float>(lbeSwapChain->getSwapChainExtent().height);
+        viewport.width = static_cast<float>(m4SwapChain->getSwapChainExtent().width);
+        viewport.height = static_cast<float>(m4SwapChain->getSwapChainExtent().height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         VkRect2D scissor{};
         scissor.offset = {0, 0};
-        scissor.extent = lbeSwapChain->getSwapChainExtent();
+        scissor.extent = m4SwapChain->getSwapChainExtent();
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     }
 
-    void LbeRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer){
+    void M4Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer){
         assert(isFrameStarted && "Cannot call endSwapChainRenderPass() when frame is not in progress");
         assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on command buffer from a different frame");
 

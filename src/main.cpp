@@ -6,7 +6,7 @@
 
 int main() {
     std::cout << "Current working directory: " << getcwd(nullptr, 0) << std::endl;
-    lbe::FirstApp app{};
+    m4::FirstApp app{};
 
     try{
         app.run();

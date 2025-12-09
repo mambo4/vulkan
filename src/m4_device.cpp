@@ -1,5 +1,5 @@
 
-#include "lbe_device.hpp"
+#include "m4_device.hpp"
 
 // std headers
 #include <cstring>
@@ -7,7 +7,7 @@
 #include <set>
 #include <unordered_set>
 
-namespace lbe {
+namespace m4 {
 
 // local callback functions
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -48,7 +48,7 @@ void DestroyDebugUtilsMessengerEXT(
 }
 
 // class member functions
-LbeDevice::LbeDevice(LbeWindow &window) : window{window} {
+M4Device::M4Device(M4Window &window) : window{window} {
   createInstance();
   setupDebugMessenger();
   createSurface();
@@ -57,7 +57,7 @@ LbeDevice::LbeDevice(LbeWindow &window) : window{window} {
   createCommandPool();
 }
 
-LbeDevice::~LbeDevice() {
+M4Device::~M4Device() {
   vkDestroyCommandPool(device_, commandPool, nullptr);
   vkDestroyDevice(device_, nullptr);
 
@@ -69,7 +69,7 @@ LbeDevice::~LbeDevice() {
   vkDestroyInstance(instance, nullptr);
 }
 
-void LbeDevice::createInstance() {
+void M4Device::createInstance() {
   if (enableValidationLayers && !checkValidationLayerSupport()) {
     throw std::runtime_error("validation layers requested, but not available!");
   }
@@ -109,7 +109,7 @@ void LbeDevice::createInstance() {
   hasGflwRequiredInstanceExtensions();
 }
 
-void LbeDevice::pickPhysicalDevice() {
+void M4Device::pickPhysicalDevice() {
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
   if (deviceCount == 0) {
@@ -134,7 +134,7 @@ void LbeDevice::pickPhysicalDevice() {
   std::cout << "physical device: " << properties.deviceName << std::endl;
 }
 
-void LbeDevice::createLogicalDevice() {
+void M4Device::createLogicalDevice() {
   QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -180,7 +180,7 @@ void LbeDevice::createLogicalDevice() {
   vkGetDeviceQueue(device_, indices.presentFamily, 0, &presentQueue_);
 }
 
-void LbeDevice::createCommandPool() {
+void M4Device::createCommandPool() {
   QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
 
   VkCommandPoolCreateInfo poolInfo = {};
@@ -194,9 +194,9 @@ void LbeDevice::createCommandPool() {
   }
 }
 
-void LbeDevice::createSurface() { window.createWindowSurface(instance, &surface_); }
+void M4Device::createSurface() { window.createWindowSurface(instance, &surface_); }
 
-bool LbeDevice::isDeviceSuitable(VkPhysicalDevice device) {
+bool M4Device::isDeviceSuitable(VkPhysicalDevice device) {
   QueueFamilyIndices indices = findQueueFamilies(device);
 
   bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -214,7 +214,7 @@ bool LbeDevice::isDeviceSuitable(VkPhysicalDevice device) {
          supportedFeatures.samplerAnisotropy;
 }
 
-void LbeDevice::populateDebugMessengerCreateInfo(
+void M4Device::populateDebugMessengerCreateInfo(
     VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
   createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -227,7 +227,7 @@ void LbeDevice::populateDebugMessengerCreateInfo(
   createInfo.pUserData = nullptr;  // Optional
 }
 
-void LbeDevice::setupDebugMessenger() {
+void M4Device::setupDebugMessenger() {
   if (!enableValidationLayers) return;
   VkDebugUtilsMessengerCreateInfoEXT createInfo;
   populateDebugMessengerCreateInfo(createInfo);
@@ -236,7 +236,7 @@ void LbeDevice::setupDebugMessenger() {
   }
 }
 
-bool LbeDevice::checkValidationLayerSupport() {
+bool M4Device::checkValidationLayerSupport() {
   uint32_t layerCount;
   vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -261,7 +261,7 @@ bool LbeDevice::checkValidationLayerSupport() {
   return true;
 }
 
-std::vector<const char *> LbeDevice::getRequiredExtensions() {
+std::vector<const char *> M4Device::getRequiredExtensions() {
   uint32_t glfwExtensionCount = 0;
   const char **glfwExtensions;
   glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -275,7 +275,7 @@ std::vector<const char *> LbeDevice::getRequiredExtensions() {
   return extensions;
 }
 
-void LbeDevice::hasGflwRequiredInstanceExtensions() {
+void M4Device::hasGflwRequiredInstanceExtensions() {
   uint32_t extensionCount = 0;
   vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
   std::vector<VkExtensionProperties> extensions(extensionCount);
@@ -298,7 +298,7 @@ void LbeDevice::hasGflwRequiredInstanceExtensions() {
   }
 }
 
-bool LbeDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool M4Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
   uint32_t extensionCount;
   vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -318,7 +318,7 @@ bool LbeDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
   return requiredExtensions.empty();
 }
 
-QueueFamilyIndices LbeDevice::findQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices M4Device::findQueueFamilies(VkPhysicalDevice device) {
   QueueFamilyIndices indices;
 
   uint32_t queueFamilyCount = 0;
@@ -349,7 +349,7 @@ QueueFamilyIndices LbeDevice::findQueueFamilies(VkPhysicalDevice device) {
   return indices;
 }
 
-SwapChainSupportDetails LbeDevice::querySwapChainSupport(VkPhysicalDevice device) {
+SwapChainSupportDetails M4Device::querySwapChainSupport(VkPhysicalDevice device) {
   SwapChainSupportDetails details;
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface_, &details.capabilities);
 
@@ -375,7 +375,7 @@ SwapChainSupportDetails LbeDevice::querySwapChainSupport(VkPhysicalDevice device
   return details;
 }
 
-VkFormat LbeDevice::findSupportedFormat(
+VkFormat M4Device::findSupportedFormat(
     const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
   for (VkFormat format : candidates) {
     VkFormatProperties props;
@@ -391,7 +391,7 @@ VkFormat LbeDevice::findSupportedFormat(
   throw std::runtime_error("failed to find supported format!");
 }
 
-uint32_t LbeDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t M4Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
   VkPhysicalDeviceMemoryProperties memProperties;
   vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
   for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
@@ -404,7 +404,7 @@ uint32_t LbeDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pr
   throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void LbeDevice::createBuffer(
+void M4Device::createBuffer(
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties,
@@ -435,7 +435,7 @@ void LbeDevice::createBuffer(
   vkBindBufferMemory(device_, buffer, bufferMemory, 0);
 }
  
-VkCommandBuffer LbeDevice::beginSingleTimeCommands() {
+VkCommandBuffer M4Device::beginSingleTimeCommands() {
   VkCommandBufferAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -453,7 +453,7 @@ VkCommandBuffer LbeDevice::beginSingleTimeCommands() {
   return commandBuffer;
 }
 
-void LbeDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void M4Device::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
   vkEndCommandBuffer(commandBuffer);
 
   VkSubmitInfo submitInfo{};
@@ -467,7 +467,7 @@ void LbeDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
   vkFreeCommandBuffers(device_, commandPool, 1, &commandBuffer);
 }
 
-void LbeDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+void M4Device::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
   VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
   VkBufferCopy copyRegion{};
@@ -479,7 +479,7 @@ void LbeDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize 
   endSingleTimeCommands(commandBuffer);
 }
 
-void LbeDevice::copyBufferToImage(
+void M4Device::copyBufferToImage(
     VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount) {
   VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -506,7 +506,7 @@ void LbeDevice::copyBufferToImage(
   endSingleTimeCommands(commandBuffer);
 }
 
-void LbeDevice::createImageWithInfo(
+void M4Device::createImageWithInfo(
     const VkImageCreateInfo &imageInfo,
     VkMemoryPropertyFlags properties,
     VkImage &image,
@@ -532,4 +532,4 @@ void LbeDevice::createImageWithInfo(
   }
 }
 
-}  // namespace lbe
+}  // namespace m4

@@ -1,10 +1,10 @@
 # pragma once
 
-#include "lbe_device.hpp"
+#include "m4_device.hpp"
 
 # include <string>
 # include <vector>
-namespace lbe {
+namespace m4 {
 
     struct PipelineConfigInfo {
 
@@ -31,19 +31,19 @@ namespace lbe {
         uint32_t subpass = 0;
     };
 
-    class LbePipeline
+    class M4Pipeline
     {
     public:
-        LbePipeline(
-            LbeDevice& device, 
+        M4Pipeline(
+            M4Device& device, 
             const std::string& vertFilepath, 
             const std::string& fragFilepath , 
             const PipelineConfigInfo& configInfo );
         
-        ~LbePipeline();
+        ~M4Pipeline();
 
-        LbePipeline(const LbePipeline&) = delete;
-        LbePipeline& operator=(const LbePipeline&) = delete;    
+        M4Pipeline(const M4Pipeline&) = delete;
+        M4Pipeline& operator=(const M4Pipeline&) = delete;    
 
         void bind(VkCommandBuffer commandBuffer);
         static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
@@ -57,7 +57,7 @@ namespace lbe {
     
         void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
-        LbeDevice& lbeDevice;
+        M4Device& m4Device;
         VkPipeline graphicsPipeline;
         VkShaderModule vertShaderModule;
         VkShaderModule fragShaderModule;
@@ -66,4 +66,4 @@ namespace lbe {
 
  
 
-}  // namespace lbe
+}  // namespace m4

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "lbe_game_object.hpp"
-#include "lbe_window.hpp"
+#include "m4_game_object.hpp"
+#include "m4_window.hpp"
 
-namespace lbe {
+namespace m4 {
 
     class KeyboardMovementController {
     public:
@@ -20,11 +20,13 @@ namespace lbe {
             int lookDown{GLFW_KEY_DOWN};
         };
 
-        void moveInPlaneXZ(GLFWwindow* window, float dt, LbeGameObject& gameObject);
+        void moveInPlaneXZ(GLFWwindow* window, float dt, M4GameObject& gameObject);
+        float mouseSensitivity{0.02f},xOffset{0.0f},yOffset{0.0f};
+        double xpos,ypos,oldx,oldy;
 
         KeyMappings keys{};
         float moveSpeed{3.f};
         float lookSpeed{1.5f};
     };
 
-}  // namespace lbe
+}  // namespace m4

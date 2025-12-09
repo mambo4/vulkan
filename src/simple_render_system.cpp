@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-namespace lbe {
+namespace m4 {
 
     struct SimplePushConstantData {
 
@@ -15,13 +15,13 @@ namespace lbe {
         alignas(16) glm::vec3 color;
     };  
 
-    SimpleRenderSystem::SimpleRenderSystem(LbeDevice& device, VkRenderPass renderPass) : lbeDevice{device} {
+    SimpleRenderSystem::SimpleRenderSystem(M4Device& device, VkRenderPass renderPass) : m4Device{device} {
         createPipelineLayout();
         createPipeline(renderPass);
     }
 
     SimpleRenderSystem::~SimpleRenderSystem() {
-        vkDestroyPipelineLayout(lbeDevice.device(), pipelineLayout, nullptr);
+        vkDestroyPipelineLayout(m4Device.device(), pipelineLayout, nullptr);
     }
 
     //game loop
@@ -43,7 +43,7 @@ namespace lbe {
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
         if (vkCreatePipelineLayout(
-            lbeDevice.device(),
+            m4Device.device(),
             &pipelineLayoutInfo,
             nullptr,
             &pipelineLayout) != VK_SUCCESS) {
@@ -53,16 +53,16 @@ namespace lbe {
     void SimpleRenderSystem::createPipeline(VkRenderPass renderPass){
         assert(pipelineLayout != nullptr && "SimpleRenderSystem::createPipeline() Cannot create pipeline before pipeline layout");
 
-        //auto pipelineConfig = LbePipeline::defaultPipelineConfigInfo(lbeSwapChain.width(), lbeSwapChain.height());
+        //auto pipelineConfig = M4Pipeline::defaultPipelineConfigInfo(m4SwapChain.width(), m4SwapChain.height());
         PipelineConfigInfo pipelineConfig{};
-        LbePipeline::defaultPipelineConfigInfo(
+        M4Pipeline::defaultPipelineConfigInfo(
             pipelineConfig
         );
 
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout;
-        lbePipeline = std::make_unique<LbePipeline>(
-            lbeDevice,
+        m4Pipeline = std::make_unique<M4Pipeline>(
+            m4Device,
             "../shaders/simple_shader.vert.spv",
             "../shaders/simple_shader.frag.spv",
             pipelineConfig);
@@ -70,9 +70,9 @@ namespace lbe {
 
     void SimpleRenderSystem::renderGameObjects(
                 VkCommandBuffer commandBuffer,
-                std::vector<LbeGameObject>& gameObjects,
-                const LbeCamera& camera){
-        lbePipeline->bind(commandBuffer);
+                std::vector<M4GameObject>& gameObjects,
+                const M4Camera& camera){
+        m4Pipeline->bind(commandBuffer);
 
         auto projectionView=camera.getProjection() * camera.getView();
 

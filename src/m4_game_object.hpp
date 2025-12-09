@@ -1,12 +1,12 @@
 #pragma once
-#include "lbe_model.hpp"
+#include "m4_model.hpp"
 //libs
 #include <glm/gtc/matrix_transform.hpp>
 //std
 #include <memory>
 
 
-namespace lbe
+namespace m4
 {
 
     struct TransformComponent {
@@ -48,29 +48,29 @@ namespace lbe
 
     };
 
-    class LbeGameObject{
+    class M4GameObject{
     public:
         using id_t =unsigned int;
 
-        static LbeGameObject createGameObject(){
+        static M4GameObject createGameObject(){
             static id_t currentId = 0;
-            return LbeGameObject{currentId++};
+            return M4GameObject{currentId++};
         }
 
-        LbeGameObject(const LbeGameObject&) = delete;
-        LbeGameObject& operator=(const LbeGameObject&) = delete;
-        LbeGameObject(LbeGameObject&&) = default;
-        LbeGameObject& operator=(LbeGameObject&&) = default;
+        M4GameObject(const M4GameObject&) = delete;
+        M4GameObject& operator=(const M4GameObject&) = delete;
+        M4GameObject(M4GameObject&&) = default;
+        M4GameObject& operator=(M4GameObject&&) = default;
 
         id_t getId() { return id; }
 
-        std::shared_ptr<LbeModel> model;
+        std::shared_ptr<M4Model> model;
         glm::vec3 color{};
         TransformComponent transform{};
 
     private:
-        LbeGameObject(id_t objId) : id{objId} {}
+        M4GameObject(id_t objId) : id{objId} {}
         id_t id;
 
     };
-} // namespace lbe
+} // namespace m4

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lbe_device.hpp"
+#include "m4_device.hpp"
 
 // vulkan headers
 #include <vulkan/vulkan.h>
@@ -10,18 +10,18 @@
 #include <vector>
 #include <memory>
 
-namespace lbe {
+namespace m4 {
 
-class LbeSwapChain {
+class M4SwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  LbeSwapChain(LbeDevice &deviceRef, VkExtent2D windowExtent);
-  LbeSwapChain(LbeDevice &deviceRef, VkExtent2D windowExtent  , std::shared_ptr<LbeSwapChain> previous);
-  ~LbeSwapChain();
+  M4SwapChain(M4Device &deviceRef, VkExtent2D windowExtent);
+  M4SwapChain(M4Device &deviceRef, VkExtent2D windowExtent  , std::shared_ptr<M4SwapChain> previous);
+  ~M4SwapChain();
 
-  LbeSwapChain(const LbeSwapChain &) = delete;
-  LbeSwapChain& operator=(const LbeSwapChain &) = delete;
+  M4SwapChain(const M4SwapChain &) = delete;
+  M4SwapChain& operator=(const M4SwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
   VkRenderPass getRenderPass() { return renderPass; }
@@ -40,7 +40,7 @@ class LbeSwapChain {
   VkResult acquireNextImage(uint32_t *imageIndex);
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
-  bool compareSwapFormats(const LbeSwapChain &otherSwapChain) const {
+  bool compareSwapFormats(const M4SwapChain &otherSwapChain) const {
     return otherSwapChain.swapChainDepthFormat == swapChainDepthFormat &&
            otherSwapChain.swapChainImageFormat == swapChainImageFormat;
   }
@@ -74,11 +74,11 @@ class LbeSwapChain {
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 
-  LbeDevice &device;
+  M4Device &device;
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
-  std::shared_ptr<LbeSwapChain> oldSwapChain;
+  std::shared_ptr<M4SwapChain> oldSwapChain;
   
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;
