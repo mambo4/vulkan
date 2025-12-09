@@ -1,5 +1,4 @@
 #include "m4_model.hpp"
-
 #include <cassert>
 #include <cstring>
 
@@ -9,7 +8,6 @@ namespace m4 {
         createVertexBuffers(m4Mesh.vertices);
         createIndexBuffers(m4Mesh.indices);
     }
-
 
     M4Model::~M4Model() {
         vkDestroyBuffer(m4Device.device(), vertexBuffer, nullptr);
