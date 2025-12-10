@@ -12,7 +12,7 @@ namespace m4 {
     struct SimplePushConstantData {
 
         glm::mat4 transform{1.0f};
-        alignas(16) glm::vec3 color;
+        glm::mat4 normalMatrix{1.0f};
     };  
 
     SimpleRenderSystem::SimpleRenderSystem(M4Device& device, VkRenderPass renderPass) : m4Device{device} {
@@ -79,8 +79,9 @@ namespace m4 {
         for (auto& obj : gameObjects) {
 
             SimplePushConstantData push{};
-            push.color = obj.color;
-            push.transform = projectionView * obj.transform.mat4(); //temp : mat* is ultimately for GPU
+            auto modelMatrix = obj.transform.mat4();
+            push.transform = projectionView * modelMatrix;
+            push.normalMatrix = obj.transform.normalMatrix();
 
             vkCmdPushConstants(
                 commandBuffer,
