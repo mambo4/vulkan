@@ -70,6 +70,7 @@
         "codecvt": "cpp",
         "filesystem": "cpp",
         "forward_list": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "cassert": "cpp"
     }
 }

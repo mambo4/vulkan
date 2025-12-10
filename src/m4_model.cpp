@@ -1,9 +1,51 @@
 #include "m4_model.hpp"
+#include "m4_utils.hpp"
+
+//lib
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tinyobjloader.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <gtx/hash.hpp>
+
+//std
 #include <cassert>
 #include <cstring>
+#include <unordered_map>
+#include <iostream>
+
+namespace std {
+
+    /*
+    // this buggy hash is from  https://www.youtube.com/watch?v=jdiPVfIHmEA&list=PL8327DO66nu9qYVKLDmdLW_84-yE4auCR&index=20
+    // it uses m4::hashCombine which is a fold expression available in c++17
+    // but the code below does not expand the parameter pack 'rest'
+    // and causes compile error :"error c3520: 'rest': parameter pack must be expanded in this context"
+    // I am too ignorant to fix it right now so I am using the other hash function below
+    template <>
+    struct hash<m4::M4Model::Vertex> {
+        size_t operator()(m4::M4Model::Vertex const &vertex) const {
+            size_t seed = 0;
+            m4::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            return seed;
+        }
+    };
+    */
+
+    // this hash is from  https://vulkan-tutorial.com/Loading_models modified to check vertex normals
+    template<> struct hash<m4::M4Model::Vertex> {
+        size_t operator()(m4::M4Model::Vertex const& vertex) const {
+            return ( 
+                (((hash<glm::vec3>()(vertex.position) ^ (hash<glm::vec3>()(vertex.color) << 1))
+                  >> 1) ^ (hash<glm::vec2>()(vertex.uv) << 1))>> 1) ^ (hash<glm::vec3>()(vertex.normal) << 1
+            );
+        }
+    };
+
+}  // namespace std
+
 
 namespace m4 {
-
+    //was: Builder
     M4Model::M4Model( M4Device &device, const M4Model::M4Mesh &m4Mesh) : m4Device{device} {
         createVertexBuffers(m4Mesh.vertices);
         createIndexBuffers(m4Mesh.indices);
@@ -16,6 +58,14 @@ namespace m4 {
             vkDestroyBuffer(m4Device.device(), indexBuffer, nullptr);
             vkFreeMemory(m4Device.device(), indexBufferMemory, nullptr);
         }   
+    }
+
+    std::unique_ptr<M4Model> M4Model::createModelFromFile(M4Device &device, const std::string &filepath) { 
+        M4Mesh m4Mesh{};
+        m4Mesh.loadModel(filepath);
+        std::cout << "Vertex count: " << m4Mesh.vertices.size() << "\n";
+        return std::make_unique<M4Model>(device, m4Mesh);
+
     }
 
     void M4Model::createVertexBuffers(const std::vector<Vertex>& vertices) {
@@ -129,4 +179,76 @@ namespace m4 {
 
         return attributeDescriptions;
     } 
+
+    //M4Mesh was: Builder !!! all tutorial refs to "Builder" use "M4Mesh" instead
+    void M4Model::M4Mesh::loadModel(const std::string &filepath) {
+
+        tinyobj::attrib_t attrib;
+        std::vector<tinyobj::shape_t> shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string warn, err;
+
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())) {
+            throw std::runtime_error(warn + err);
+        }
+
+        vertices.clear();
+        indices.clear();
+
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+        int stride=0;
+        for (const auto& shape : shapes) {
+            for (const auto& index : shape.mesh.indices) {
+                Vertex vertex{};
+
+                if (index.vertex_index >= 0) {
+          
+                    stride=3;
+                    vertex.position = {
+                        
+                        attrib.vertices[stride * index.vertex_index + 0],
+                        attrib.vertices[stride * index.vertex_index + 1],
+                        attrib.vertices[stride * index.vertex_index + 2]
+                    };
+                    
+                    //optional OBJ vert color extension
+                    auto colorIndex = 3 * index.vertex_index +2; //looks suspicious
+                    if(colorIndex < attrib.colors.size()){
+                        vertex.color = {
+                            attrib.colors[colorIndex - 2],
+                            attrib.colors[colorIndex - 1],
+                            attrib.colors[colorIndex - 0]
+                        };
+                    }else{
+                        vertex.color = {1.0f, 1.0f, 1.0f};
+                    }
+                }
+
+                if (index.normal_index >= 0) {
+                    stride=3;
+                    vertex.normal = {
+                        attrib.normals[stride * index.normal_index + 0],
+                        attrib.normals[stride * index.normal_index + 1],
+                        attrib.normals[stride * index.normal_index + 2]
+                    };
+                }
+                
+                if (index.texcoord_index >= 0) {
+                    stride=2;
+                    vertex.uv = {
+                        attrib.texcoords[stride * index.texcoord_index + 0],
+                        1.0f - attrib.texcoords[stride * index.texcoord_index + 1] //vulkan inverts y
+                    };
+                }
+
+                //vertices.push_back(vertex); /*Vertex count: 30888*/
+                if (uniqueVertices.count(vertex) == 0) {
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                    vertices.push_back(vertex);
+                }
+                indices.push_back(uniqueVertices[vertex]); /*Vertex count: 5545*/
+            }
+        }
+    }
 }

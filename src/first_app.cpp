@@ -112,11 +112,11 @@ namespace m4 {
     }
 
     void FirstApp::loadGameObjects(){
-        std::shared_ptr<M4Model> M4Model = createCubeModel(m4Device, {0.0f, 0.0f, 0.0f});
+        std::shared_ptr<M4Model> M4Model = M4Model::createModelFromFile(m4Device,"../models/smooth_vase.obj");
         auto cube = M4GameObject::createGameObject();
         cube.model = M4Model;
         cube.transform.translation = {0.0f, 0.0f, 2.5f}; // translate cube back(+) from 0.0z to be in viewing volume
-        cube.transform.scale = {0.5f, 0.5f, 0.5f};
+        cube.transform.scale = {3.0f, 3.0f, 3.0f};
         gameObjects.push_back(std::move(cube));
     }
 
