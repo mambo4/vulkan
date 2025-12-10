@@ -30,16 +30,18 @@ namespace m4 {
     //game loop
     void FirstApp::run() {
 
-        M4Buffer globalUboBuffer{
-            m4Device,
-            sizeof(GlobalUbo),
-            M4SwapChain::MAX_FRAMES_IN_FLIGHT,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-            m4Device.properties.limits.minUniformBufferOffsetAlignment
-        };
-
-        globalUboBuffer.map();
+        //create UBO buffer foreach MAX_FRAMES_IN_FLIGHT
+        std::vector<std::unique_ptr<M4Buffer>> uboBuffers(M4SwapChain::MAX_FRAMES_IN_FLIGHT);
+        for(size_t i = 0; i < uboBuffers.size(); i++) {
+            uboBuffers[i] = std::make_unique<M4Buffer>(
+                m4Device,
+                sizeof(GlobalUbo),
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+            );
+            uboBuffers[i]->map();
+        }
 
         SimpleRenderSystem simpleRenderSystem{m4Device, m4Renderer.getSwapChainRenderPass()};
         M4Camera camera{};
@@ -77,8 +79,8 @@ namespace m4 {
                 //update
                 GlobalUbo ubo{};
                 ubo.projectionView = camera.getProjection() * camera.getView();
-                globalUboBuffer.writeToIndex(&ubo, m4Renderer.getFrameIndex());
-                globalUboBuffer.flushIndex(m4Renderer.getFrameIndex());    
+                uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                uboBuffers[frameIndex]->flush();    
 
                 //render
                 m4Renderer.beginSwapChainRenderPass(commandBuffer);
