@@ -16,6 +16,11 @@
 
 namespace m4 {
 
+    struct GlobalUbo {
+        glm::mat4 projectionView{1.0f};
+        glm::vec3 lightDirection{1.0f, -3.0f, -1.0f};
+    };
+
     FirstApp::FirstApp() {
         loadGameObjects();
     }
@@ -24,6 +29,17 @@ namespace m4 {
 
     //game loop
     void FirstApp::run() {
+
+        M4Buffer globalUboBuffer{
+            m4Device,
+            sizeof(GlobalUbo),
+            M4SwapChain::MAX_FRAMES_IN_FLIGHT,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+            m4Device.properties.limits.minUniformBufferOffsetAlignment
+        };
+
+        globalUboBuffer.map();
 
         SimpleRenderSystem simpleRenderSystem{m4Device, m4Renderer.getSwapChainRenderPass()};
         M4Camera camera{};
@@ -49,11 +65,24 @@ namespace m4 {
 
             float aspect = m4Renderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect,0.1f,10.0f);
+
             if(auto commandBuffer = m4Renderer.beginFrame()) {
+                int frameIndex = m4Renderer.getFrameIndex();
+                FrameInfo frameInfo{
+                    frameIndex,
+                    frameTime,
+                    commandBuffer,
+                    camera
+                };
+                //update
+                GlobalUbo ubo{};
+                ubo.projectionView = camera.getProjection() * camera.getView();
+                globalUboBuffer.writeToIndex(&ubo, m4Renderer.getFrameIndex());
+                globalUboBuffer.flushIndex(m4Renderer.getFrameIndex());    
+
+                //render
                 m4Renderer.beginSwapChainRenderPass(commandBuffer);
-
-                simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects,camera);
-
+                simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
                 m4Renderer.endSwapChainRenderPass(commandBuffer);
                 m4Renderer.endFrame();
             }

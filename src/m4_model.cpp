@@ -51,14 +51,7 @@ namespace m4 {
         createIndexBuffers(m4Mesh.indices);
     }
 
-    M4Model::~M4Model() {
-        vkDestroyBuffer(m4Device.device(), vertexBuffer, nullptr);
-        vkFreeMemory(m4Device.device(), vertexBufferMemory, nullptr);
-        if(hasIndexBuffer) {
-            vkDestroyBuffer(m4Device.device(), indexBuffer, nullptr);
-            vkFreeMemory(m4Device.device(), indexBufferMemory, nullptr);
-        }   
-    }
+    M4Model::~M4Model() { }
 
     std::unique_ptr<M4Model> M4Model::createModelFromFile(M4Device &device, const std::string &filepath) { 
         M4Mesh m4Mesh{};
@@ -73,31 +66,28 @@ namespace m4 {
         assert(vertexCount >= 3 && "Vertex count must be at least 3");
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        m4Device.createBuffer(
-            bufferSize,
+        uint32_t vertexSize = sizeof(vertices[0]);
+        M4Buffer stagingBuffer{
+            m4Device,
+            vertexSize,
+            vertexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory);
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        };
 
-        void* data;
-        vkMapMemory(m4Device.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-        vkUnmapMemory(m4Device.device(), stagingBufferMemory);
-        
-        m4Device.createBuffer(
-            bufferSize,
+        stagingBuffer.map();
+        stagingBuffer.writeToBuffer((void*)vertices.data());
+
+        vertexBuffer = std::make_unique<M4Buffer>(
+            m4Device,
+            vertexSize,
+            vertexCount,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            vertexBuffer,
-            vertexBufferMemory);
-
-        m4Device.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-        vkDestroyBuffer(m4Device.device(), stagingBuffer, nullptr);
-        vkFreeMemory(m4Device.device(), stagingBufferMemory, nullptr);
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );  
+        
+        m4Device.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+        
     }
 
     void M4Model::createIndexBuffers(const std::vector<uint32_t>& indices) {
@@ -109,32 +99,30 @@ namespace m4 {
         }   
 
         VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
+        uint32_t indexSize = sizeof(indices[0]);
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        m4Device.createBuffer(
-            bufferSize,
+        M4Buffer stagingBuffer{
+            m4Device,
+            indexSize,
+            indexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory);
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        };
 
-        void* data;
-        vkMapMemory(m4Device.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
-        vkUnmapMemory(m4Device.device(), stagingBufferMemory);
-        
-        m4Device.createBuffer(
-            bufferSize,
+        stagingBuffer.map();
+        stagingBuffer.writeToBuffer((void*)indices.data());
+
+
+        indexBuffer = std::make_unique<M4Buffer>(
+            m4Device,
+            indexSize,
+            indexCount,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            indexBuffer,
-            indexBufferMemory);
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );  
 
-        m4Device.copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-        vkDestroyBuffer(m4Device.device(), stagingBuffer, nullptr);
-        vkFreeMemory(m4Device.device(), stagingBufferMemory, nullptr);
+        m4Device.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
+        
     }
 
     void M4Model::draw(VkCommandBuffer commandBuffer) {
@@ -147,11 +135,11 @@ namespace m4 {
     }
 
     void M4Model::bind(VkCommandBuffer commandBuffer) {
-        VkBuffer buffers[] = {vertexBuffer};
+        VkBuffer buffers[] = {vertexBuffer->getBuffer()}; 
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
         if(hasIndexBuffer) {
-            vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+            vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         }
     }
 

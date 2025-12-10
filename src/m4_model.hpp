@@ -1,6 +1,8 @@
 #pragma once
 
 #include "m4_device.hpp"
+#include "m4_buffer.hpp"
+
 
 //LIB
 #define GLM_FORCE_RADIANS
@@ -53,13 +55,14 @@ namespace m4 {
         void createIndexBuffers(const std::vector<uint32_t>& indices);
 
         M4Device& m4Device;
-        VkBuffer vertexBuffer;
-        VkBuffer indexBuffer;
-        VkDeviceMemory vertexBufferMemory;
-        VkDeviceMemory indexBufferMemory;
+
+        std::unique_ptr<M4Buffer> vertexBuffer;
         uint32_t vertexCount;
-        uint32_t indexCount;
+
         bool hasIndexBuffer = false;
+        std::unique_ptr<M4Buffer> indexBuffer;
+        uint32_t indexCount;
+
 
     };
 }  // namespace m4

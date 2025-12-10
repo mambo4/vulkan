@@ -5,6 +5,7 @@
 #include "m4_model.hpp"
 #include "m4_game_object.hpp"
 #include "m4_camera.hpp"
+#include "m4_frame_info.hpp"
 
 //std
 #include <memory>
@@ -23,9 +24,7 @@ namespace m4 {
             SimpleRenderSystem(const SimpleRenderSystem&) = delete;
             SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-            void renderGameObjects(
-                VkCommandBuffer commandBuffer,
-                std::vector<M4GameObject>& gameObjects,const M4Camera& camera);
+            void renderGameObjects(FrameInfo &frameInfo, std::vector<M4GameObject> &gameObjects);
 
         private:
             void createPipelineLayout();

@@ -50,6 +50,7 @@ namespace m4 {
                 throw std::runtime_error("failed to create pipeline layout!");
             }
     }
+
     void SimpleRenderSystem::createPipeline(VkRenderPass renderPass){
         assert(pipelineLayout != nullptr && "SimpleRenderSystem::createPipeline() Cannot create pipeline before pipeline layout");
 
@@ -68,13 +69,11 @@ namespace m4 {
             pipelineConfig);
     }
 
-    void SimpleRenderSystem::renderGameObjects(
-                VkCommandBuffer commandBuffer,
-                std::vector<M4GameObject>& gameObjects,
-                const M4Camera& camera){
-        m4Pipeline->bind(commandBuffer);
+    void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo, std::vector<M4GameObject> &gameObjects){
 
-        auto projectionView=camera.getProjection() * camera.getView();
+        m4Pipeline->bind(frameInfo.commandBuffer);
+
+        auto projectionView=frameInfo.camera.getProjection() * frameInfo.camera.getView();
 
         for (auto& obj : gameObjects) {
 
@@ -84,15 +83,15 @@ namespace m4 {
             push.normalMatrix = obj.transform.normalMatrix();
 
             vkCmdPushConstants(
-                commandBuffer,
+                frameInfo.commandBuffer,
                 pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(SimplePushConstantData),
                 &push);
 
-            obj.model->bind(commandBuffer);
-            obj.model->draw(commandBuffer);
+            obj.model->bind(frameInfo.commandBuffer);
+            obj.model->draw(frameInfo.commandBuffer);
         }
     }
 

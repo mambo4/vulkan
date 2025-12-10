@@ -19,5 +19,5 @@ void main(){
     gl_Position = push.transform * vec4(position, 1.0);
     vec3 normalWorldSpace = normalize(mat3(push.normalMatrix) * normal);
     float lightIntensity = max(dot(normalWorldSpace, DIRECTION_TO_LIGHT), 0.0);
-    fragColor = lightIntensity*color + AMBIENT_COLOR
+    fragColor = lightIntensity*color + AMBIENT_COLOR;
 }
