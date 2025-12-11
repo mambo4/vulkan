@@ -5,6 +5,8 @@
 #include "m4_model.hpp"
 #include "m4_game_object.hpp"
 #include "m4_renderer.hpp"
+#include "m4_descriptors.hpp"
+
 //std
 #include <memory>
 #include <vector>
@@ -12,7 +14,7 @@
 
 namespace m4 {
     
-     class FirstApp{
+    class FirstApp{
         
         public: 
             static constexpr int WIDTH = 800;
@@ -34,8 +36,9 @@ namespace m4 {
             M4Device m4Device{m4Window};
             M4Renderer m4Renderer{m4Window, m4Device};
 
-            std::vector<VkCommandBuffer> commandBuffers;
+            // std::vector<VkCommandBuffer> commandBuffers;
+            // order of declaration matters
+            std::unique_ptr<M4DescriptorPool> globalPool{};
             std::vector<M4GameObject> gameObjects;
-     }; 
-
+    }; 
 } 

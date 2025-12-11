@@ -11,5 +11,6 @@ namespace m4{
         float frameTime;
         VkCommandBuffer commandBuffer;
         M4Camera &camera;
+        VkDescriptorSet globalDescriptorSet;
     };
 }

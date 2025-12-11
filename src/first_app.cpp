@@ -17,11 +17,16 @@
 namespace m4 {
 
     struct GlobalUbo {
-        glm::mat4 projectionView{1.0f};
+        glm::mat4 projectionViewMatrix{1.0f};
         glm::vec3 lightDirection{1.0f, -3.0f, -1.0f};
     };
 
     FirstApp::FirstApp() {
+        globalPool = M4DescriptorPool::Builder(m4Device)
+            .setMaxSets(M4SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, M4SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .build();
+        
         loadGameObjects();
     }
 
@@ -43,7 +48,19 @@ namespace m4 {
             uboBuffers[i]->map();
         }
 
-        SimpleRenderSystem simpleRenderSystem{m4Device, m4Renderer.getSwapChainRenderPass()};
+        auto globalSetLayout = M4DescriptorSetLayout::Builder(m4Device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .build();   
+
+        std::vector<VkDescriptorSet> globalDescriptorSets(M4SwapChain::MAX_FRAMES_IN_FLIGHT);
+        for(size_t i = 0; i < globalDescriptorSets.size(); i++) {
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            M4DescriptorWriter(*globalSetLayout, *globalPool)
+                .writeBuffer(0, &bufferInfo)
+                .build(globalDescriptorSets[i]);
+        }
+
+        SimpleRenderSystem simpleRenderSystem{m4Device, m4Renderer.getSwapChainRenderPass(),globalSetLayout->getDescriptorSetLayout()};
         M4Camera camera{};
         camera.setViewTarget(glm::vec3{-1.0f,-1.0f, -2.5f}, glm::vec3{0.0f, 0.0f,  2.5f});
 
@@ -74,11 +91,12 @@ namespace m4 {
                     frameIndex,
                     frameTime,
                     commandBuffer,
-                    camera
+                    camera,
+                    globalDescriptorSets[frameIndex]
                 };
                 //update
                 GlobalUbo ubo{};
-                ubo.projectionView = camera.getProjection() * camera.getView();
+                ubo.projectionViewMatrix = camera.getProjection() * camera.getView();
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();    
 

@@ -18,7 +18,7 @@ namespace m4 {
         
         public: 
         
-            SimpleRenderSystem(M4Device& device, VkRenderPass renderPass);
+            SimpleRenderSystem(M4Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
             ~SimpleRenderSystem();
 
             SimpleRenderSystem(const SimpleRenderSystem&) = delete;
@@ -27,7 +27,7 @@ namespace m4 {
             void renderGameObjects(FrameInfo &frameInfo, std::vector<M4GameObject> &gameObjects);
 
         private:
-            void createPipelineLayout();
+            void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
             void createPipeline(VkRenderPass renderPass);
 
             M4Device &m4Device;
