@@ -1,5 +1,6 @@
 #include "first_app.hpp"
-#include "simple_render_system.hpp"
+#include "systems/simple_render_system.hpp"//?
+#include "systems/point_light_system.hpp"//?
 #include "m4_camera.hpp"
 #include "keyboard_movement_controller.hpp"
 
@@ -21,8 +22,9 @@
 namespace m4 {
 
     struct GlobalUbo {
-        glm::mat4 projectionViewMatrix{1.0f};
-        glm::vec4 ambientLightColor{0.2f, 0.1f, 0.1f, 0.02f}; //RGBI
+        glm::mat4 projection{1.0f};
+        glm::mat4 view{1.0f};
+        glm::vec4 ambientLightColor{0.2f, 0.0f, 0.0f, 0.02f}; //RGBI
         glm::vec3 lightPosition{-1.0f};
         alignas(16)glm::vec4 lightColor{1.0f};//RGBI
     };
@@ -67,8 +69,11 @@ namespace m4 {
         }
 
         SimpleRenderSystem simpleRenderSystem{m4Device, m4Renderer.getSwapChainRenderPass(),globalSetLayout->getDescriptorSetLayout()};
+        PointLightSystem pointLightSystem{m4Device, m4Renderer.getSwapChainRenderPass(),globalSetLayout->getDescriptorSetLayout()};
         M4Camera camera{};
         camera.setViewTarget(glm::vec3{-1.0f,-1.0f, -2.5f}, glm::vec3{0.0f, 0.0f,  2.5f});
+
+        
 
         auto viewerObject = M4GameObject::createGameObject();
         viewerObject.transform.translation = {0.0f, 0.0f, -2.5f};
@@ -106,13 +111,15 @@ namespace m4 {
                 };
                 //update
                 GlobalUbo ubo{};
-                ubo.projectionViewMatrix = camera.getProjection() * camera.getView();
+                ubo.projection = camera.getProjection();
+                ubo.view = camera.getView();
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();    
 
                 //render
                 m4Renderer.beginSwapChainRenderPass(commandBuffer);
                 simpleRenderSystem.renderGameObjects(frameInfo);
+                pointLightSystem.render(frameInfo);
                 m4Renderer.endSwapChainRenderPass(commandBuffer);
                 m4Renderer.endFrame();
             }

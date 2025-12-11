@@ -66,8 +66,8 @@ namespace m4 {
         shaderStages[1].pNext = nullptr;
         shaderStages[1].pSpecializationInfo = nullptr;
 
-        auto bindingDescriptions = M4Model::Vertex::getBindingDescriptions();
-        auto attributeDescriptions = M4Model::Vertex::getAttributeDescriptions();
+        auto& bindingDescriptions = configInfo.bindingDescriptions;
+        auto& attributeDescriptions = configInfo.attributeDescriptions;
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -191,6 +191,9 @@ namespace m4 {
         configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStates.data();//?^v
         configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStates.size());
         configInfo.dynamicStateInfo.flags = 0;
+
+        configInfo.bindingDescriptions=M4Model::Vertex::getBindingDescriptions();
+        configInfo.attributeDescriptions=M4Model::Vertex::getAttributeDescriptions();
     }
         
 }
