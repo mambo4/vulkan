@@ -4,7 +4,7 @@
 #include <gtc/matrix_transform.hpp>
 //std
 #include <memory>
-
+#include <unordered_map>
 
 namespace m4
 {
@@ -24,7 +24,8 @@ namespace m4
     class M4GameObject{
     public:
         using id_t =unsigned int;
-
+        using Map=std::unordered_map<id_t, M4GameObject>;
+        
         static M4GameObject createGameObject(){
             static id_t currentId = 0;
             return M4GameObject{currentId++};

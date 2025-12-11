@@ -55,7 +55,7 @@ namespace m4 {
         }
 
         auto globalSetLayout = M4DescriptorSetLayout::Builder(m4Device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
             .build();   
 
         std::vector<VkDescriptorSet> globalDescriptorSets(M4SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -101,7 +101,8 @@ namespace m4 {
                     frameTime,
                     commandBuffer,
                     camera,
-                    globalDescriptorSets[frameIndex]
+                    globalDescriptorSets[frameIndex],
+                    gameObjects
                 };
                 //update
                 GlobalUbo ubo{};
@@ -111,7 +112,7 @@ namespace m4 {
 
                 //render
                 m4Renderer.beginSwapChainRenderPass(commandBuffer);
-                simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+                simpleRenderSystem.renderGameObjects(frameInfo);
                 m4Renderer.endSwapChainRenderPass(commandBuffer);
                 m4Renderer.endFrame();
             }
@@ -125,21 +126,21 @@ namespace m4 {
         object_1.model = M4Model;
         object_1.transform.translation = {-0.5f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
         object_1.transform.scale = {3.0f, 1.5f, 3.0f};
-        gameObjects.push_back(std::move(object_1));
+        gameObjects.emplace(object_1.getId(),std::move(object_1));
 
         M4Model = M4Model::createModelFromFile(m4Device,"../models/smooth_vase.obj");
         auto object_2 = M4GameObject::createGameObject();
         object_2.model = M4Model;
         object_2.transform.translation = {0.5f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
         object_2.transform.scale = {3.0f, 1.5f, 3.0f};
-        gameObjects.push_back(std::move(object_2));
+        gameObjects.emplace(object_2.getId(),std::move(object_2));
 
         M4Model = M4Model::createModelFromFile(m4Device,"../models/quad.obj");
         auto object_3 = M4GameObject::createGameObject();
         object_3.model = M4Model;
         object_3.transform.translation = {0.0f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
         object_3.transform.scale = {3.0f, 1.0f, 3.0f};
-        gameObjects.push_back(std::move(object_3));
+        gameObjects.emplace(object_3.getId(),std::move(object_3));
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
     }
 

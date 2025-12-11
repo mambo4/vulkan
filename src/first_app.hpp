@@ -39,6 +39,6 @@ namespace m4 {
             // std::vector<VkCommandBuffer> commandBuffers;
             // order of declaration matters
             std::unique_ptr<M4DescriptorPool> globalPool{};
-            std::vector<M4GameObject> gameObjects;
+            M4GameObject::Map gameObjects;
     }; 
 } 

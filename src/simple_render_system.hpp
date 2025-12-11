@@ -24,7 +24,7 @@ namespace m4 {
             SimpleRenderSystem(const SimpleRenderSystem&) = delete;
             SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-            void renderGameObjects(FrameInfo &frameInfo, std::vector<M4GameObject> &gameObjects);
+            void renderGameObjects(FrameInfo &frameInfo);
 
         private:
             void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
