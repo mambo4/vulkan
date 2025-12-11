@@ -11,7 +11,7 @@ namespace m4 {
         if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS) {rotate.y -= 1.f;}
         if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS) { rotate.x += 1.f;}
         if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS) {rotate.x -= 1.f;}
-
+        
         glfwGetCursorPos(window, &xpos, &ypos);
         if(oldx==0.0){oldx=xpos;}
         if(oldy==0.0){oldy=ypos;}

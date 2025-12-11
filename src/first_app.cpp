@@ -14,11 +14,17 @@
 #include <stdexcept>
 #include <array>
 
+//constants 
+#define CLIP_Z 100.0f
+
+
 namespace m4 {
 
     struct GlobalUbo {
         glm::mat4 projectionViewMatrix{1.0f};
-        glm::vec3 lightDirection{1.0f, -3.0f, -1.0f};
+        glm::vec4 ambientLightColor{0.2f, 0.1f, 0.1f, 0.02f}; //RGBI
+        glm::vec3 lightPosition{-1.0f};
+        alignas(16)glm::vec4 lightColor{1.0f};//RGBI
     };
 
     FirstApp::FirstApp() {
@@ -65,10 +71,13 @@ namespace m4 {
         camera.setViewTarget(glm::vec3{-1.0f,-1.0f, -2.5f}, glm::vec3{0.0f, 0.0f,  2.5f});
 
         auto viewerObject = M4GameObject::createGameObject();
+        viewerObject.transform.translation = {0.0f, 0.0f, -2.5f};
         KeyboardMovementController cameraController{};
         cameraController.oldx=0.0;
         cameraController.oldy=0.0;
         auto currentTime = std::chrono::high_resolution_clock::now();
+        
+        glfwSetInputMode(m4Window.getGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         while(!m4Window.shouldClose()) {
             glfwPollEvents();
@@ -83,7 +92,7 @@ namespace m4 {
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
             float aspect = m4Renderer.getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect,0.1f,10.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect,0.1f,CLIP_Z);
 
             if(auto commandBuffer = m4Renderer.beginFrame()) {
                 int frameIndex = m4Renderer.getFrameIndex();
@@ -114,16 +123,23 @@ namespace m4 {
         std::shared_ptr<M4Model> M4Model = M4Model::createModelFromFile(m4Device,"../models/flat_vase.obj");
         auto object_1 = M4GameObject::createGameObject();
         object_1.model = M4Model;
-        object_1.transform.translation = {-0.5f, 0.5f, 2.5f}; // translate cube back(+) from 0.0z to be in viewing volume
+        object_1.transform.translation = {-0.5f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
         object_1.transform.scale = {3.0f, 1.5f, 3.0f};
         gameObjects.push_back(std::move(object_1));
 
         M4Model = M4Model::createModelFromFile(m4Device,"../models/smooth_vase.obj");
         auto object_2 = M4GameObject::createGameObject();
         object_2.model = M4Model;
-        object_2.transform.translation = {0.5f, 0.5f, 2.5f}; // translate cube back(+) from 0.0z to be in viewing volume
+        object_2.transform.translation = {0.5f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
         object_2.transform.scale = {3.0f, 1.5f, 3.0f};
         gameObjects.push_back(std::move(object_2));
+
+        M4Model = M4Model::createModelFromFile(m4Device,"../models/quad.obj");
+        auto object_3 = M4GameObject::createGameObject();
+        object_3.model = M4Model;
+        object_3.transform.translation = {0.0f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
+        object_3.transform.scale = {3.0f, 1.0f, 3.0f};
+        gameObjects.push_back(std::move(object_3));
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
     }
 

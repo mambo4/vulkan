@@ -26,7 +26,7 @@ namespace m4 {
 
         KeyMappings keys{};
         float moveSpeed{3.f};
-        float lookSpeed{1.5f};
+        float lookSpeed{10.0f};
     };
 
 }  // namespace m4
