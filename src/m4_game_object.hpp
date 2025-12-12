@@ -21,6 +21,11 @@ namespace m4
         glm::mat3 normalMatrix();
     };
 
+    struct PointLightComponent {
+    float lightIntensity = 1.0f;
+    };
+
+
     class M4GameObject{
     public:
         using id_t =unsigned int;
@@ -31,6 +36,8 @@ namespace m4
             return M4GameObject{currentId++};
         }
 
+        static M4GameObject createPointLight(float intensity=10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.0f));
+        
         M4GameObject(const M4GameObject&) = delete;
         M4GameObject& operator=(const M4GameObject&) = delete;
         M4GameObject(M4GameObject&&) = default;
@@ -38,9 +45,12 @@ namespace m4
 
         id_t getId() { return id; }
 
-        std::shared_ptr<M4Model> model;
         glm::vec3 color{};
         TransformComponent transform{};
+
+        //optional components
+        std::shared_ptr<M4Model> model{};
+        std::unique_ptr<PointLightComponent> pointLight = nullptr;
 
     private:
         M4GameObject(id_t objId) : id{objId} {}

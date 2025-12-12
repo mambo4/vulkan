@@ -16,3 +16,4 @@ del /Q %CD%\src\*.obj
 del /Q %CD%\*.obj
 del /Q %CD%\build\*.*
 del /Q %CD%\bin\*.* 
+del /Q %CD%\shaders\*.spv 

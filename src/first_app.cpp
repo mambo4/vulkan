@@ -1,8 +1,8 @@
 #include "first_app.hpp"
-#include "systems/simple_render_system.hpp"//?
-#include "systems/point_light_system.hpp"//?
 #include "m4_camera.hpp"
 #include "keyboard_movement_controller.hpp"
+#include "simple_render_system.hpp"//?
+#include "point_light_system.hpp"//?
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -20,14 +20,6 @@
 
 
 namespace m4 {
-
-    struct GlobalUbo {
-        glm::mat4 projection{1.0f};
-        glm::mat4 view{1.0f};
-        glm::vec4 ambientLightColor{0.2f, 0.0f, 0.0f, 0.02f}; //RGBI
-        glm::vec3 lightPosition{-1.0f};
-        alignas(16)glm::vec4 lightColor{1.0f};//RGBI
-    };
 
     FirstApp::FirstApp() {
         globalPool = M4DescriptorPool::Builder(m4Device)
@@ -109,10 +101,12 @@ namespace m4 {
                     globalDescriptorSets[frameIndex],
                     gameObjects
                 };
+
                 //update
                 GlobalUbo ubo{};
                 ubo.projection = camera.getProjection();
                 ubo.view = camera.getView();
+                pointLightSystem.update(frameInfo, ubo);
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();    
 
@@ -129,6 +123,7 @@ namespace m4 {
 
     void FirstApp::loadGameObjects(){
         std::shared_ptr<M4Model> M4Model = M4Model::createModelFromFile(m4Device,"../models/flat_vase.obj");
+
         auto object_1 = M4GameObject::createGameObject();
         object_1.model = M4Model;
         object_1.transform.translation = {-0.5f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
@@ -148,7 +143,29 @@ namespace m4 {
         object_3.transform.translation = {0.0f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
         object_3.transform.scale = {3.0f, 1.0f, 3.0f};
         gameObjects.emplace(object_3.getId(),std::move(object_3));
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+        
+        std::vector<glm::vec3> lightColors{
+            {1.f, .1f, .1f},
+            {.1f, .1f, 1.f},
+            {.1f, 1.f, .1f},
+            {1.f, 1.f, .1f},
+            {.1f, 1.f, 1.f},
+            {1.f, 1.f, 1.f} 
+        };
+
+        for(int i = 0; i < lightColors.size(); i++ ) {
+            auto pointLight = M4GameObject::createPointLight(0.2f);
+            pointLight.color = lightColors[i];
+            auto rotateLight= glm::rotate(
+                glm::mat4(1.0f),
+                (i  * glm::two_pi<float>()) / lightColors.size(),
+                {0.0f, -1.0f, 0.0f}
+            );
+            pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4{ -1.0f, -1.0f, -1.0f, 1.0f});
+
+            gameObjects.emplace(pointLight.getId(),std::move(pointLight));
+        }
+
     }
 
 }
