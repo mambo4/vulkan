@@ -18,6 +18,7 @@ namespace m4{
     struct GlobalUbo {
         glm::mat4 projection{1.0f};
         glm::mat4 view{1.0f};
+        glm::mat4 inverseView{1.0f};
         glm::vec4 ambientLightColor{0.2f, 0.0f, 0.0f, 0.02f}; //RGBI
         PointLight pointLights[MAX_LIGHTS];
         int numLights = 0;

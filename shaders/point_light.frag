@@ -11,6 +11,7 @@ struct PointLight {
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
+    mat4 invView;
     vec4 ambientLightColor;
     PointLight pointLights[10]; //must update with m4_frame_info.hpp MAX_LIGHTS
     int numLights;

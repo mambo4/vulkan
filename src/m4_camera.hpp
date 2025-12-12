@@ -15,8 +15,10 @@ namespace m4 {
 
             glm::mat4 getProjection() const {return projectionMatrix;};
             glm::mat4 getView() const {return viewMatrix;};
+            glm::mat4 getInverseView() const {return inverseViewMatrix;};
         private:
             glm::mat4 projectionMatrix;
             glm::mat4 viewMatrix{1.0f};
+            glm::mat4 inverseViewMatrix{1.0f};
     };
 }
