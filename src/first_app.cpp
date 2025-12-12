@@ -113,8 +113,12 @@ namespace m4 {
 
                 //render
                 m4Renderer.beginSwapChainRenderPass(commandBuffer);
+                
+                //opaque before transparent
                 simpleRenderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
+
+
                 m4Renderer.endSwapChainRenderPass(commandBuffer);
                 m4Renderer.endFrame();
             }

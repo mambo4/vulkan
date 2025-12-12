@@ -7,13 +7,13 @@
 namespace m4 {
 
     struct PipelineConfigInfo {
+
+        PipelineConfigInfo()=default;
         PipelineConfigInfo(const PipelineConfigInfo&) = delete;
         PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
-        PipelineConfigInfo() = default;
         std::vector<VkVertexInputBindingDescription> bindingDescriptions{};
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-        
         VkPipelineViewportStateCreateInfo viewportInfo;
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
         VkPipelineRasterizationStateCreateInfo rasterizationInfo;
@@ -45,6 +45,7 @@ namespace m4 {
 
         void bind(VkCommandBuffer commandBuffer);
         static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+        static void enableAlphaBlending(PipelineConfigInfo& configInfo);
         
     private:
         static std::vector<char> readFile(const std::string& filepath);

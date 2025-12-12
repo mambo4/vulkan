@@ -1,7 +1,7 @@
 #include "point_light_system.hpp"
 #include <stdexcept>
 #include <array>
-
+#include <map>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm.hpp>
@@ -57,11 +57,12 @@ namespace m4 {
         //auto pipelineConfig = M4Pipeline::defaultPipelineConfigInfo(m4SwapChain.width(), m4SwapChain.height());
         PipelineConfigInfo pipelineConfig{};
         M4Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+        M4Pipeline::enableAlphaBlending(pipelineConfig);
         pipelineConfig.attributeDescriptions.clear();
         pipelineConfig.bindingDescriptions.clear();
 
         pipelineConfig.renderPass = renderPass;
-        pipelineConfig.pipelineLayout = pipelineLayout;
+        pipelineConfig.pipelineLayout = pipelineLayout; 
         m4Pipeline = std::make_unique<M4Pipeline>(
             m4Device,
             "../shaders/point_light.vert.spv",
@@ -73,6 +74,8 @@ namespace m4 {
 
         //anim rotation of lights
         auto rotateLight= glm::rotate( glm::mat4(1.0f), frameInfo.frameTime,{0.0f, -1.0f, 0.0f});
+
+
 
         int lightIndex = 0;
         for (auto& kv : frameInfo.gameObjects) {
@@ -97,6 +100,18 @@ namespace m4 {
 
     void PointLightSystem::render(FrameInfo &frameInfo){
 
+        //z sorting of lights for proper blending could be done here
+        std::map<float, M4GameObject::id_t> sortedLights;
+        for (auto& kv : frameInfo.gameObjects) {
+            auto& obj = kv.second;
+            if (obj.pointLight == nullptr) continue;
+
+            // ditance form camera
+            float distance = glm::length(frameInfo.camera.getPosition() - obj.transform.translation);
+            float distSqr =  glm::dot(distance,distance);
+            sortedLights[distSqr] = obj.getId();
+        }
+
         m4Pipeline->bind(frameInfo.commandBuffer);
 
         auto projectionView=frameInfo.camera.getProjection() * frameInfo.camera.getView();
@@ -111,9 +126,10 @@ namespace m4 {
             0,
             nullptr);
 
-        for (auto& kv : frameInfo.gameObjects) {
-            auto& obj = kv.second;
-            if (obj.pointLight == nullptr) continue;
+        //draw in reverse sorted order (furthest first)
+        for(auto it = sortedLights.rbegin(); it != sortedLights.rend(); ++it) {
+            // use game obj id to find pointlight obj
+            auto& obj = frameInfo.gameObjects.at(it->second);
 
             PointLightPushConstants push{};
             push.position = glm::vec4{obj.transform.translation, 1.0f};
