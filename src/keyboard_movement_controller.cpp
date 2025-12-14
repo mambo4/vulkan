@@ -12,6 +12,19 @@ namespace m4 {
         if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS) { rotate.x += 1.f;}
         if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS) {rotate.x -= 1.f;}
         
+
+        /*
+            
+            glfwSetCursorPosCallback:  
+                continuous tracking (like drawing or camera movement) 
+                your expected to provide a global function and pass that to glfwSetCursorPosCallback.
+                https://stackoverflow.com/questions/29356783/glfwsetcursorposcallback-to-function-in-another-class
+                
+            glfwGetCursorPos: 
+                discrete checks within a frame (e.g., checking position before a click). 
+        */ 
+       
+
         glfwGetCursorPos(window, &xpos, &ypos);
         if(oldx==0.0){oldx=xpos;}
         if(oldy==0.0){oldy=ypos;}
@@ -23,7 +36,7 @@ namespace m4 {
         oldy=ypos;
         rotate.y += xOffset;
         rotate.x -= yOffset;
-        // std::cout<<"xOffset: "<<xOffset<<" yOffset: "<<yOffset<<std::endl;
+
         // rotation 0 will break the math, only rotate if > epsilon
         if (glm::dot(rotate,rotate) > std::numeric_limits<float>::epsilon()) {
             gameObject.transform.rotation += lookSpeed * dt *glm::normalize(rotate);

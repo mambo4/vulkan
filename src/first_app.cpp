@@ -1,8 +1,9 @@
 #include "first_app.hpp"
 #include "m4_camera.hpp"
 #include "keyboard_movement_controller.hpp"
-#include "simple_render_system.hpp"//?
-#include "point_light_system.hpp"//?
+#include "simple_render_system.hpp"
+#include "point_light_system.hpp"
+#include "m4_texture.hpp"
 
 //libs
 #define GLM_FORCE_RADIANS
@@ -25,6 +26,7 @@ namespace m4 {
         globalPool = M4DescriptorPool::Builder(m4Device)
             .setMaxSets(M4SwapChain::MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, M4SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, M4SwapChain::MAX_FRAMES_IN_FLIGHT)
             .build();
         
         loadGameObjects();
@@ -50,13 +52,26 @@ namespace m4 {
 
         auto globalSetLayout = M4DescriptorSetLayout::Builder(m4Device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();   
 
+        //todo: move this to game object loading
+        M4Texture texture = M4Texture(
+            m4Device,
+            "../assets/textures/uv1.png"
+        );
+
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = texture.getImageLayout();   
+        imageInfo.imageView = texture.getImageView();
+        imageInfo.sampler = texture.getSampler();
+    
         std::vector<VkDescriptorSet> globalDescriptorSets(M4SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(size_t i = 0; i < globalDescriptorSets.size(); i++) {
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
             M4DescriptorWriter(*globalSetLayout, *globalPool)
                 .writeBuffer(0, &bufferInfo)
+                .writeImage(1, &imageInfo)
                 .build(globalDescriptorSets[i]);
         }
 
@@ -127,7 +142,7 @@ namespace m4 {
     } 
 
     void FirstApp::loadGameObjects(){
-        std::shared_ptr<M4Model> M4Model = M4Model::createModelFromFile(m4Device,"../models/flat_vase.obj");
+        std::shared_ptr<M4Model> M4Model = M4Model::createModelFromFile(m4Device,"../assets/models/flat_vase.obj");
 
         auto object_1 = M4GameObject::createGameObject();
         object_1.model = M4Model;
@@ -135,18 +150,18 @@ namespace m4 {
         object_1.transform.scale = {3.0f, 1.5f, 3.0f};
         gameObjects.emplace(object_1.getId(),std::move(object_1));
 
-        M4Model = M4Model::createModelFromFile(m4Device,"../models/smooth_vase.obj");
+        M4Model = M4Model::createModelFromFile(m4Device,"../assets/models/smooth_vase.obj");
         auto object_2 = M4GameObject::createGameObject();
         object_2.model = M4Model;
         object_2.transform.translation = {0.5f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
         object_2.transform.scale = {3.0f, 1.5f, 3.0f};
         gameObjects.emplace(object_2.getId(),std::move(object_2));
 
-        M4Model = M4Model::createModelFromFile(m4Device,"../models/quad.obj");
+        M4Model = M4Model::createModelFromFile(m4Device,"../assets/models/quad.obj");
         auto object_3 = M4GameObject::createGameObject();
         object_3.model = M4Model;
         object_3.transform.translation = {0.0f, 0.5f, 0.0f}; // translate cube back(+) from 0.0z to be in viewing volume
-        object_3.transform.scale = {3.0f, 1.0f, 3.0f};
+        object_3.transform.scale = {10.0f, 1.0f, 10.0f};
         gameObjects.emplace(object_3.getId(),std::move(object_3));
         
         std::vector<glm::vec3> lightColors{
