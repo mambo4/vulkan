@@ -37,7 +37,7 @@ namespace m4 {
     //game loop
     void FirstApp::run() {
 
-        //create UBO buffer foreach MAX_FRAMES_IN_FLIGHT
+        //create UBO buffer for each MAX_FRAMES_IN_FLIGHT
         std::vector<std::unique_ptr<M4Buffer>> uboBuffers(M4SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(size_t i = 0; i < uboBuffers.size(); i++) {
             uboBuffers[i] = std::make_unique<M4Buffer>(
@@ -85,8 +85,8 @@ namespace m4 {
         auto viewerObject = M4GameObject::createGameObject();
         viewerObject.transform.translation = {0.0f, 0.0f, -2.5f};
         KeyboardMovementController cameraController{};
-        cameraController.oldx=0.0;
-        cameraController.oldy=0.0;
+        cameraController.cursorXPrev=0.0;
+        cameraController.cursorYPrev=0.0;
         auto currentTime = std::chrono::high_resolution_clock::now();
         
         glfwSetInputMode(m4Window.getGLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -100,6 +100,7 @@ namespace m4 {
 
             frameTime = std::min(frameTime,MAX_FRAME_TIME ); //cap max frame time to 16ms
 
+            // cameraController.moveInPlaneXZ(m4Window.getGLFWwindow(), frameTime, viewerObject);
             cameraController.moveInPlaneXZ(m4Window.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 

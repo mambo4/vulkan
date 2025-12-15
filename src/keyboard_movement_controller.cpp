@@ -11,7 +11,10 @@ namespace m4 {
         if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS) {rotate.y -= 1.f;}
         if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS) { rotate.x += 1.f;}
         if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS) {rotate.x -= 1.f;}
-        
+        if (glfwGetKey(window, keys.sprint) == GLFW_PRESS) {moveSpeed=baseSpeed*sprintMultiplier;} 
+        if (glfwGetKey(window, keys.sprint) == GLFW_RELEASE) {moveSpeed=baseSpeed;} 
+        if (glfwGetKey(window, keys.jump) == GLFW_PRESS) {pitchEnabled = true;}
+        if (glfwGetKey(window, keys.jump) == GLFW_RELEASE) {pitchEnabled = false;} 
 
         /*
             
@@ -25,17 +28,17 @@ namespace m4 {
         */ 
        
 
-        glfwGetCursorPos(window, &xpos, &ypos);
-        if(oldx==0.0){oldx=xpos;}
-        if(oldy==0.0){oldy=ypos;}
+        glfwGetCursorPos(window, &cursorXNow, &cursorYNow);
+        if(cursorXPrev==0.0){cursorXPrev=cursorXNow;}
+        if(cursorYPrev==0.0){cursorYPrev=cursorYNow;}
 
-        xOffset=(float)(xpos - oldx)*mouseSensitivity;
-        yOffset=(float)(ypos - oldy)*mouseSensitivity;
+        cursorXOffset=(float)(cursorXNow - cursorXPrev)*mouseSensitivity;
+        cursorYOffset=(float)(cursorYNow - cursorYPrev)*mouseSensitivity;
 
-        oldx=xpos;
-        oldy=ypos;
-        rotate.y += xOffset;
-        rotate.x -= yOffset;
+        cursorXPrev=cursorXNow;
+        cursorYPrev=cursorYNow;
+        rotate.y += cursorXOffset;
+        rotate.x -= cursorYOffset;
 
         // rotation 0 will break the math, only rotate if > epsilon
         if (glm::dot(rotate,rotate) > std::numeric_limits<float>::epsilon()) {
@@ -50,8 +53,15 @@ namespace m4 {
         gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
         
         float yaw = gameObject.transform.rotation.y;
-        const glm::vec3 forwardDir{sin(yaw), 0.f, cos(yaw)};
-        const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
+        float pitch = gameObject.transform.rotation.x;
+
+        float yRot=0.0f;
+        if(pitchEnabled){
+            yRot=-sin(pitch);
+        }
+
+        const glm::vec3 forwardDir{sin(yaw), yRot, cos(yaw)};
+        const glm::vec3 rightDir{forwardDir.z, yRot, -forwardDir.x};
         const glm::vec3 upDir{0.f, -1.f, 0.f};
 
         glm::vec3 moveDir{0.f};
