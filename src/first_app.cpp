@@ -46,11 +46,11 @@ namespace m4 {
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-            );
+            ); 
             uboBuffers[i]->map();
         }
 
-        auto globalSetLayout = M4DescriptorSetLayout::Builder(m4Device)
+        auto globalDescriptorSetLayout = M4DescriptorSetLayout::Builder(m4Device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
             .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();   
@@ -69,14 +69,14 @@ namespace m4 {
         std::vector<VkDescriptorSet> globalDescriptorSets(M4SwapChain::MAX_FRAMES_IN_FLIGHT);
         for(size_t i = 0; i < globalDescriptorSets.size(); i++) {
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
-            M4DescriptorWriter(*globalSetLayout, *globalPool)
+            M4DescriptorWriter(*globalDescriptorSetLayout, *globalPool)
                 .writeBuffer(0, &bufferInfo)
                 .writeImage(1, &imageInfo)
                 .build(globalDescriptorSets[i]);
         }
 
-        SimpleRenderSystem simpleRenderSystem{m4Device, m4Renderer.getSwapChainRenderPass(),globalSetLayout->getDescriptorSetLayout()};
-        PointLightSystem pointLightSystem{m4Device, m4Renderer.getSwapChainRenderPass(),globalSetLayout->getDescriptorSetLayout()};
+        SimpleRenderSystem simpleRenderSystem{m4Device, m4Renderer.getSwapChainRenderPass(),globalDescriptorSetLayout->getDescriptorSetLayout()};
+        PointLightSystem pointLightSystem{m4Device, m4Renderer.getSwapChainRenderPass(),globalDescriptorSetLayout->getDescriptorSetLayout()};
         M4Camera camera{};
         camera.setViewTarget(glm::vec3{-1.0f,-1.0f, -2.5f}, glm::vec3{0.0f, 0.0f,  2.5f});
 
@@ -109,6 +109,7 @@ namespace m4 {
 
             if(auto commandBuffer = m4Renderer.beginFrame()) {
                 int frameIndex = m4Renderer.getFrameIndex();
+                
                 FrameInfo frameInfo{
                     frameIndex,
                     frameTime,
